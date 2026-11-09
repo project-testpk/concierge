@@ -277,9 +277,9 @@
 
   const TYPE_OPTIONS = [
     { id: "all_types", label: "すべてのアイテム", hint: "素材に合うすべての商品から探す", keywords: "" },
-    { id: "bag", label: "バッグ（トート・ショルダー）", hint: "トート、ショルダー、リュックなど", keywords: "バッグ, トート, ショルダー, リュック, ブリーフ, 鞄" },
-    { id: "wallet", label: "財布・ウォレット", hint: "長財布、二つ折り、コンパクト財布など", keywords: "財布, ウォレット, 二つ折り, ロング, マネークリップ" },
-    { id: "goods", label: "キーケース・革小物", hint: "キーケース、名刺入れ、スマート小物など", keywords: "キーケース, 名刺入れ, カードケース, カバー, ケース, airtag, 小物" }
+    { id: "bag", label: "バッグ（トート・ショルダー）", hint: "トート、ショルダー、リュックなど", keywords: ["バッグ", "トート", "ショルダー", "リュック", "ブリーフ", "鞄", "ミニトート"] },
+    { id: "wallet", label: "財布・ウォレット", hint: "長財布、二つ折り、コンパクト財布など", keywords: ["財布", "ウォレット", "二つ折り", "ロング", "マネークリップ"] },
+    { id: "goods", label: "キーケース・革小物", hint: "キーケース、名刺入れ、スマート小物など", keywords: ["キーケース", "名刺入れ", "カードケース", "カバー", "ケース", "小物"] }
   ];
 
   const BUDGET_OPTIONS = [
@@ -314,7 +314,7 @@
   let messages = [{ role: "concierge", text: config.greeting }];
   
   const state = {
-    step: "purpose",       // "purpose" | "category" | "type_sub" | "budget" | "done"
+    step: "purpose",
     selectedPurpose: null,
     selectedCategory: null,
     selectedType: null,
@@ -333,14 +333,15 @@
         PRODUCTS = data.products.map(p => {
           const rawPrice = p.variants[0]?.price || "0";
           const numericPrice = Math.round(parseFloat(rawPrice));
+          const tagList = p.tags ? (Array.isArray(p.tags) ? p.tags : p.tags.split(',')).map(t => t.trim()) : [];
           return {
             id: p.handle,
             name: p.title,
             price: numericPrice,
             url: `${config.shopifyDomain.replace(/\/$/, '')}/products/${p.handle}`,
             image: p.images[0]?.src || "",
-            tags: p.tags ? (Array.isArray(p.tags) ? p.tags : p.tags.split(',').map(t => t.trim().toLowerCase())) : [],
-            titleLower: (p.title + " " + (p.tags || "")).toLowerCase()
+            tags: tagList,
+            searchText: (p.title + " " + tagList.join(" ")).toLowerCase()
           };
         });
       }
@@ -440,53 +441,53 @@
     } else {
       const minPrice = budget ? budget.min : 0;
       const maxPrice = budget ? budget.max : 9999999;
-      const sortBy = category.sortBy || "price_desc";
 
-      // ★管理画面（CSV）で設定された「Shopify必須タグ」を確実に取得して判定に使うように修正
-      const requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-      const csvKeywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+      // 素材タグ・キーワード（CSVのtagsとkeywordsを取得）
+      const csvTags = (category ? (category.tags || "") : "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      const csvKeywords = (category ? (category.keywords || "") : "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
 
+      // アイテムタイプキーワード
       let typeKeywords = [];
       if (state.selectedType && state.selectedType.id !== "all_types") {
-        typeKeywords = state.selectedType.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+        typeKeywords = state.selectedType.keywords;
       }
 
+      // 段階的マッチング（条件を緩めながら一致する候補を確実に探す）
       let candidates = PRODUCTS.filter(p => {
         if (p.price < minPrice || p.price > maxPrice) return false;
 
-        // 1. 管理画面の「Shopify必須タグ」との一致チェック
-        if (requiredTags.length > 0) {
-          const matchTag = requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)));
-          if (!matchTag) return false;
+        // 素材判定（タグ一致 OR 商品名・タグに素材名が含まれるか）
+        let matchMaterial = true;
+        if (csvTags.length > 0 || csvKeywords.length > 0) {
+          const targets = [...csvTags, ...csvKeywords];
+          matchMaterial = targets.some(t => p.searchText.includes(t));
         }
 
-        // 2. 判定キーワードのチェック
-        if (csvKeywords.length > 0) {
-          const matchKw = csvKeywords.some(k => p.titleLower.includes(k));
-          if (!matchKw) return false;
-        }
-
-        // 3. 選択されたアイテムタイプ（バッグ・財布など）のキーワードチェック
+        // タイプ判定（アイテム種別キーワードが含まれるか）
+        let matchType = true;
         if (typeKeywords.length > 0) {
-          const matchType = typeKeywords.some(k => p.titleLower.includes(k));
-          if (!matchType) return false;
+          matchType = typeKeywords.some(k => p.searchText.includes(k.toLowerCase()));
         }
 
-        return true;
+        return matchMaterial && matchType;
       });
 
-      // 万が一厳密な条件で0件になった場合のフォールバック（価格帯のみで最低限候補を表示）
+      // 該当商品がない場合のフォールバック①（素材のみでヒット）
+      if (candidates.length === 0 && (csvTags.length > 0 || csvKeywords.length > 0)) {
+        const targets = [...csvTags, ...csvKeywords];
+        candidates = PRODUCTS.filter(p => {
+          if (p.price < minPrice || p.price > maxPrice) return false;
+          return targets.some(t => p.searchText.includes(t));
+        });
+      }
+
+      // 該当商品がない場合のフォールバック②（全商品の中から価格帯でヒット）
       if (candidates.length === 0) {
         candidates = PRODUCTS.filter(p => p.price >= minPrice && p.price <= maxPrice);
       }
 
-      if (sortBy === "price_asc") {
-        candidates.sort((a, b) => a.price - b.price);
-      } else if (sortBy === "price_desc") {
-        candidates.sort((a, b) => b.price - a.price);
-      } else if (sortBy === "tag_match") {
-        candidates.sort((a, b) => b.tags.length - a.tags.length);
-      }
+      // 価格の高い順で並び替え
+      candidates.sort((a, b) => b.price - a.price);
 
       if (candidates.length > 0) {
         state.productOffset = (state.productOffset + 3) % candidates.length;
