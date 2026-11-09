@@ -275,15 +275,11 @@
     purposes: customConfig.purposes || []
   };
 
-  const MATERIAL_OPTIONS = [
-    { id: "vintage", label: "ヴィンテージレザー", hint: "味わい深い風合いと経年変化を楽しめる上質な革", tag: "vintage-leather" },
-    { id: "viscount", label: "ヴァイカウントレザー", hint: "重厚感のある光沢と深みが魅力のプレミアム革", tag: "viscount-leather" }
-  ];
-
   const TYPE_OPTIONS = [
-    { id: "bag", label: "バッグ（トート・ショルダー）", hint: "トート、ショルダー、リュックなど", keywords: "バッグ, トート, ショルダー, リュック" },
-    { id: "wallet", label: "財布・ウォレット", hint: "長財布、二つ折り、コンパクト財布など", keywords: "財布, ウォレット" },
-    { id: "goods", label: "キーケース・革小物", hint: "キーケース、名刺入れ、スマート小物など", keywords: "キーケース, 名刺入れ, カードケース, カバー" }
+    { id: "all_types", label: "すべてのアイテム", hint: "素材に合うすべての商品から探す", keywords: "" },
+    { id: "bag", label: "バッグ（トート・ショルダー）", hint: "トート、ショルダー、リュックなど", keywords: "バッグ, トート, ショルダー, リュック, ブリーフ, 鞄" },
+    { id: "wallet", label: "財布・ウォレット", hint: "長財布、二つ折り、コンパクト財布など", keywords: "財布, ウォレット, 二つ折り, ロング, マネークリップ" },
+    { id: "goods", label: "キーケース・革小物", hint: "キーケース、名刺入れ、スマート小物など", keywords: "キーケース, 名刺入れ, カードケース, カバー, ケース, airtag, 小物" }
   ];
 
   const BUDGET_OPTIONS = [
@@ -303,6 +299,7 @@
     if (config.logoFilter === "sepia") filterClass = "filter-sepia";
     else if (config.logoFilter === "dark") filterClass = "filter-dark";
     else if (config.logoFilter === "monochrome") filterClass = "filter-monochrome";
+
     brandContainer.innerHTML = `<img src="${config.logoUrl}" alt="${config.brandName}" class="brand-logo ${filterClass}">`;
   } else {
     document.getElementById("brandNameLabel").textContent = config.brandName;
@@ -317,11 +314,10 @@
   let messages = [{ role: "concierge", text: config.greeting }];
   
   const state = {
-    step: "purpose",       // "purpose" | "material_sub" | "type_sub" | "category" | "budget" | "done"
+    step: "purpose",       // "purpose" | "category" | "type_sub" | "budget" | "done"
     selectedPurpose: null,
-    selectedMaterial: null,
-    selectedType: null,
     selectedCategory: null,
+    selectedType: null,
     selectedBudget: null,
     productOffset: 0
   };
@@ -365,7 +361,7 @@
               <div class="card">
                 <img src="${p.image}" alt="${p.name}">
                 <div class="card-body">
-                  <p class="card-cat">${state.selectedType ? state.selectedType.label : (state.selectedCategory ? state.selectedCategory.label : '')}</p>
+                  <p class="card-cat">${state.selectedType && state.selectedType.id !== 'all_types' ? state.selectedType.label : (state.selectedCategory ? state.selectedCategory.label : '')}</p>
                   <h3>${p.name}</h3>
                   <p class="price">${p.price > 0 ? p.price.toLocaleString() + '円 税込' : ''}</p>
                   <a class="product-link" href="${p.url}" target="_blank">
@@ -404,14 +400,11 @@
     if (state.step === "purpose") {
       return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint }));
     }
-    if (state.step === "material_sub") {
-      return MATERIAL_OPTIONS;
+    if (state.step === "category" && state.selectedPurpose) {
+      return state.selectedPurpose.categories.map(c => ({ id: c.id, label: c.label, hint: c.hint }));
     }
     if (state.step === "type_sub") {
       return TYPE_OPTIONS;
-    }
-    if (state.step === "category" && state.selectedPurpose) {
-      return state.selectedPurpose.categories.map(c => ({ id: c.id, label: c.label, hint: c.hint }));
     }
     if (state.step === "budget") {
       return BUDGET_OPTIONS;
@@ -425,9 +418,8 @@
   function resetFlow() {
     state.step = "purpose";
     state.selectedPurpose = null;
-    state.selectedMaterial = null;
-    state.selectedType = null;
     state.selectedCategory = null;
+    state.selectedType = null;
     state.selectedBudget = null;
     state.productOffset = 0;
     messages.push({ role: "concierge", text: "ご用途を選び直してくださいね。" });
@@ -446,34 +438,55 @@
         return { name: "おすすめピックアップ商品", price: 0, url: u, image: "" };
       }).filter(Boolean);
     } else {
-      let keywords = [];
-      let requiredTags = [];
-
-      if (state.selectedMaterial && state.selectedType) {
-        keywords = state.selectedType.keywords.split(',').map(k => k.trim().toLowerCase());
-        requiredTags = [state.selectedMaterial.tag];
-      } else if (category) {
-        keywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
-        requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-      }
-      
       const minPrice = budget ? budget.min : 0;
       const maxPrice = budget ? budget.max : 9999999;
+      const sortBy = category.sortBy || "price_desc";
+
+      // ★管理画面（CSV）で設定された「Shopify必須タグ」を確実に取得して判定に使うように修正
+      const requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      const csvKeywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+
+      let typeKeywords = [];
+      if (state.selectedType && state.selectedType.id !== "all_types") {
+        typeKeywords = state.selectedType.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+      }
 
       let candidates = PRODUCTS.filter(p => {
         if (p.price < minPrice || p.price > maxPrice) return false;
+
+        // 1. 管理画面の「Shopify必須タグ」との一致チェック
         if (requiredTags.length > 0) {
-          const hasAllTags = requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)));
-          if (!hasAllTags) return false;
+          const matchTag = requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)));
+          if (!matchTag) return false;
         }
-        if (keywords.length > 0) {
-          const matchKeyword = keywords.some(k => p.titleLower.includes(k));
-          if (!matchKeyword) return false;
+
+        // 2. 判定キーワードのチェック
+        if (csvKeywords.length > 0) {
+          const matchKw = csvKeywords.some(k => p.titleLower.includes(k));
+          if (!matchKw) return false;
         }
+
+        // 3. 選択されたアイテムタイプ（バッグ・財布など）のキーワードチェック
+        if (typeKeywords.length > 0) {
+          const matchType = typeKeywords.some(k => p.titleLower.includes(k));
+          if (!matchType) return false;
+        }
+
         return true;
       });
 
-      candidates.sort((a, b) => b.price - a.price);
+      // 万が一厳密な条件で0件になった場合のフォールバック（価格帯のみで最低限候補を表示）
+      if (candidates.length === 0) {
+        candidates = PRODUCTS.filter(p => p.price >= minPrice && p.price <= maxPrice);
+      }
+
+      if (sortBy === "price_asc") {
+        candidates.sort((a, b) => a.price - b.price);
+      } else if (sortBy === "price_desc") {
+        candidates.sort((a, b) => b.price - a.price);
+      } else if (sortBy === "tag_match") {
+        candidates.sort((a, b) => b.tags.length - a.tags.length);
+      }
 
       if (candidates.length > 0) {
         state.productOffset = (state.productOffset + 3) % candidates.length;
@@ -497,33 +510,11 @@
       const purpose = config.purposes.find(p => p.id === id);
       if (!purpose) return;
       state.selectedPurpose = purpose;
+      state.step = "category";
+      state.productOffset = 0;
+
       messages.push({ role: "user", text: purpose.label });
-
-      if (purpose.id === "material") {
-        state.step = "material_sub";
-        messages.push({ role: "concierge", text: "お好みのレザー素材をお選びください。" });
-      } else {
-        state.step = "category";
-        messages.push({ role: "concierge", text: `${purpose.label}ですね。ご覧になりたいカテゴリーをお選びください。` });
-      }
-
-    } else if (state.step === "material_sub") {
-      const mat = MATERIAL_OPTIONS.find(m => m.id === id);
-      if (!mat) return;
-      state.selectedMaterial = mat;
-      state.step = "type_sub";
-
-      messages.push({ role: "user", text: mat.label });
-      messages.push({ role: "concierge", text: `${mat.label}ですね。どのタイプのアイテムをお探しですか？` });
-
-    } else if (state.step === "type_sub") {
-      const type = TYPE_OPTIONS.find(t => t.id === id);
-      if (!type) return;
-      state.selectedType = type;
-      state.step = "budget";
-
-      messages.push({ role: "user", text: type.label });
-      messages.push({ role: "concierge", text: `${type.label}ですね。ご予算の目安をお選びください。` });
+      messages.push({ role: "concierge", text: `${purpose.label}ですね。それでは、ご覧になりたいカテゴリーをお選びください。` });
 
     } else if (state.step === "category") {
       const category = state.selectedPurpose.categories.find(c => c.id === id);
@@ -540,10 +531,22 @@
           text: `ご案内いたします。以下のリンクより詳細をご確認ください。`,
           products: matched
         });
+      } else if (state.selectedPurpose.id === "material") {
+        state.step = "type_sub";
+        messages.push({ role: "concierge", text: `${category.label}ですね。どのようなアイテムタイプをお探しですか？` });
       } else {
         state.step = "budget";
         messages.push({ role: "concierge", text: `${category.label}ですね。ご予算の目安をお選びください。` });
       }
+
+    } else if (state.step === "type_sub") {
+      const type = TYPE_OPTIONS.find(t => t.id === id);
+      if (!type) return;
+      state.selectedType = type;
+      state.step = "budget";
+
+      messages.push({ role: "user", text: type.label });
+      messages.push({ role: "concierge", text: `${type.label}ですね。ご予算の目安をお選びください。` });
 
     } else if (state.step === "budget") {
       const budget = BUDGET_OPTIONS.find(b => b.id === id);
@@ -576,7 +579,7 @@
 
     messages.push({ role: "user", text: val });
 
-    if (state.step === "done") {
+    if (state.step === "done" && state.selectedCategory) {
       const lowerVal = val.toLowerCase();
       if (["他", "別", "違う", "もっと", "再", "もっかい", "もう一回", "次", "候補"].some(keyword => lowerVal.includes(keyword))) {
         const matched = getMatchedProducts(state.selectedCategory, state.selectedBudget);
@@ -611,9 +614,8 @@
   document.getElementById("resetBtn").addEventListener("click", () => {
     state.step = "purpose";
     state.selectedPurpose = null;
-    state.selectedMaterial = null;
-    state.selectedType = null;
     state.selectedCategory = null;
+    state.selectedType = null;
     state.selectedBudget = null;
     state.productOffset = 0;
     messages = [{ role: "concierge", text: config.greeting }];
