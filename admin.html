@@ -29,45 +29,71 @@
     color: var(--color-text);
     line-height: 1.6;
   }
-  .wrap { max-width: 840px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
+  .wrap { max-width: 1000px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
   h1 { margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
   .section { margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 24px; }
   .section h2 { font-size: 15px; color: var(--color-main); margin-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
   
   .field { display: grid; gap: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
-  input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--color-line); border-radius: 6px; background: #faf8f5; font-size: 13px; outline: none; transition: border-color 0.2s; }
   input:focus, select:focus { border-color: var(--color-accent); }
-  input[type="color"] { width: 60px; height: 40px; border: 1px solid var(--color-line); border-radius: 8px; padding: 2px; background: #faf8f5; cursor: pointer; }
+  input[type="color"] { width: 60px; height: 38px; border: 1px solid var(--color-line); border-radius: 6px; padding: 2px; background: #faf8f5; cursor: pointer; }
 
-  /* 階層カード用スタイル */
-  .purpose-card, .category-card {
+  .nav-card {
     background: #faf8f5;
     border: 1px solid var(--color-line);
     border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-    position: relative;
+    padding: 16px;
+    margin-bottom: 12px;
   }
-  .category-card {
-    background: #ffffff;
+  .card-header { font-weight: 700; font-size: 13px; color: var(--color-main-deep); margin-bottom: 8px; }
+
+  /* スプレッドシート風テーブルスタイル */
+  .spreadsheet-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: #fff;
     margin-top: 12px;
   }
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--color-main-deep);
+  .spreadsheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
+    white-space: nowrap;
   }
+  .spreadsheet-table th {
+    background: #f4f0eb;
+    color: var(--color-main-deep);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-line);
+    border-right: 1px solid var(--color-line);
+    font-weight: 700;
+  }
+  .spreadsheet-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-line);
+    border-right: 1px solid var(--color-line);
+    vertical-align: middle;
+  }
+  .spreadsheet-table input, .spreadsheet-table select {
+    padding: 6px 8px;
+    font-size: 12px;
+    background: #faf8f5;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
+  .spreadsheet-table input:focus { background: #fff; }
+
   .btn-danger {
     background: #fff0f0;
     color: #c94a4a;
     border: 1px solid #ffd6d6;
-    padding: 6px 12px;
+    padding: 4px 8px;
     font-size: 11px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
   }
@@ -77,14 +103,14 @@
     background: #f0ece6;
     color: var(--color-text);
     border: 1px solid var(--color-line);
-    padding: 10px 16px;
-    font-size: 13px;
-    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   .btn-secondary:hover { background: #e4dfd5; }
 
@@ -105,30 +131,25 @@
   .btn-primary:hover { opacity: 0.9; }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .note { font-size: 12px; color: var(--color-muted); line-height: 1.6; margin-top: 4px; }
-  .mode-box { border-left: 3px solid var(--color-accent); padding-left: 12px; margin-top: 12px; }
-
-  /* CSVガイド用スタイル */
-  .csv-guide-box {
-    background: #f4f0eb;
-    border: 1px solid var(--color-line);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-    font-size: 12px;
-  }
+  
+  .csv-guide-box { background: #f4f0eb; border: 1px solid var(--color-line); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 12px; }
   .csv-guide-box code { background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-line); color: var(--color-main); }
+  
+  @media (min-width: 768px) {
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>
       コンシェルジュ 運用管理パネル
-      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">CSV一括登録対応</span>
+      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">スプレッドシート風一覧管理</span>
     </h1>
     <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面（index.html）へ即時反映されます。</p>
 
-    <!-- 1. 基本設定 -->
     <div class="section" style="border-top: none; padding-top: 0;">
       <h2>1. ブランド・基本設定</h2>
       <div class="grid-2">
@@ -153,14 +174,13 @@
         </label>
       </div>
       <label class="field">最初の挨拶メッセージ
-        <input type="text" id="greeting" value="ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。">
+        <input type="text" id="greeting" value="ようこそ。革の表情から、今日の一品を一緒に見つけましょう。下のメニューからお選びください。">
       </label>
       <label class="field">メインカラー
         <input type="color" id="mainColor" value="#6e5340">
       </label>
     </div>
 
-    <!-- 2. Shopify基本設定 -->
     <div class="section">
       <h2>2. Shopify連携設定</h2>
       <label class="field">Shopify ストア ドメイン
@@ -168,41 +188,83 @@
       </label>
     </div>
 
-    <!-- 3. CSV一括登録・入出力セクション -->
     <div class="section">
-      <h2>
-        3. 階層・レコメンド設定のCSV一括登録 / エクスポート
-      </h2>
-      <p class="note">多くのカテゴリや条件をまとめて管理したい場合は、CSVファイルで一括インポート・エクスポートが可能です。</p>
-      
+      <h2>3. 下部フローティングナビゲーション設定</h2>
+      <div class="grid-4" style="margin-top: 16px;">
+        <div class="nav-card">
+          <div class="card-header">ランキング</div>
+          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_ranking" value="ランキング"></label>
+          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_ranking" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_ranking"><option value="true">表示</option><option value="false">非表示</option></select></label>
+        </div>
+        <div class="nav-card">
+          <div class="card-header">カテゴリ</div>
+          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_category" value="カテゴリ"></label>
+          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_category" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_category"><option value="true">表示</option><option value="false">非表示</option></select></label>
+        </div>
+        <div class="nav-card">
+          <div class="card-header">素材</div>
+          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_material" value="素材"></label>
+          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_material" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_material"><option value="true">表示</option><option value="false">非表示</option></select></label>
+        </div>
+        <div class="nav-card">
+          <div class="card-header">金額</div>
+          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_budget" value="金額"></label>
+          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_budget" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_budget"><option value="true">表示</option><option value="false">非表示</option></select></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>4. 階層・レコメンド設定のCSV一括登録 / エクスポート</h2>
       <div class="csv-guide-box">
         <strong>📋 CSVの書き方・ルール</strong>
         <ul style="margin: 8px 0 0 20px; padding: 0; line-height: 1.7;">
-          <li>1行目はヘッダー（見出し）として必ずそのまま残してください。</li>
-          <li>同じ <code>purpose_id</code>（目的ID）を持つ行は、同じ大本グループに自動まとめられます。</li>
-          <li><code>purpose_image</code> 列に大本の画像URL、<code>category_image</code> 列にカテゴリ/素材ごとの画像URLを指定できます。</li>
+          <li>1行目はヘッダーとしてそのまま残してください。</li>
         </ul>
         <div style="margin-top: 10px; display: flex; gap: 10px;">
-          <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSVをダウンロード</button>
-          <button class="btn-secondary" type="button" id="exportCsvBtn">📤 現在の設定をCSVで書き出す</button>
+          <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSV</button>
+          <button class="btn-secondary" type="button" id="exportCsvBtn">📤 CSV書き出し</button>
         </div>
       </div>
-
-      <label class="field">CSVファイルをアップロードして一括反映
+      <label class="field">CSVアップロード
         <input type="file" id="csvFileInput" accept=".csv" style="padding: 10px; background: #fff;">
       </label>
       <p id="csvMsg" style="font-size: 12px; color: #4a7c59; font-weight: 500; margin-top: 4px;"></p>
     </div>
 
-    <!-- 4. ツリー階層・レコメンド詳細設定（個別編集） -->
+    <!-- 5. スプレッドシート風 一覧テーブル -->
     <div class="section">
       <h2>
-        4. 個別ツリー階層・レコメンド設定
-        <button class="btn-secondary" type="button" id="addPurposeBtn">+ 目的（大本）を追加</button>
+        5. ツリー階層・レコメンド一覧管理
+        <button class="btn-secondary" type="button" id="addRowBtn">+ 行を追加</button>
       </h2>
-      <p class="note" style="margin-bottom: 16px;">ここで直接編集するか、上記のCSV一括登録で上書きすることができます。</p>
+      <p class="note">スプレッドシートのように横並びで効率よく編集できます。</p>
       
-      <div id="purposesContainer"></div>
+      <div class="spreadsheet-container">
+        <table class="spreadsheet-table">
+          <thead>
+            <tr>
+              <th>目的ID (purpose_id)</th>
+              <th>目的ラベル</th>
+              <th>目的サブ説明</th>
+              <th>目的画像URL</th>
+              <th>カテゴリID (category_id)</th>
+              <th>カテゴリ名</th>
+              <th>カテゴリ画像URL</th>
+              <th>モード</th>
+              <th>キーワード / URL</th>
+              <th>Shopifyタグ</th>
+              <th>最低価格</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="spreadsheetBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <button class="btn-primary" id="saveBtn" type="button">設定をすべて保存する</button>
@@ -219,9 +281,15 @@
     logoUrl: "",
     logoFilter: "none",
     tagline: "革と対話するコンシェルジュ",
-    greeting: "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。",
+    greeting: "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。下のメニューからお選びください。",
     mainColor: "#6e5340",
     shopifyDomain: "https://daysart-classic.com",
+    navSettings: {
+      ranking: { label: "ランキング", show: true, url: "" },
+      category: { label: "カテゴリ", show: true, url: "" },
+      material: { label: "素材", show: true, url: "" },
+      budget: { label: "金額", show: true, url: "" }
+    },
     purposes: [
       {
         id: "self",
@@ -232,11 +300,11 @@
           {
             id: "bag",
             label: "バッグ（トート・ショルダー）",
-            hint: "上質なレザーのトートやショルダーなど",
+            hint: "",
             image: "",
             mode: "dynamic",
             manualUrls: ["", "", ""],
-            keywords: "バッグ, トート, ショルダー, リュック, ボディバッグ",
+            keywords: "バッグ, トート",
             tags: "",
             minPrice: 0,
             maxPrice: 9999999,
@@ -249,206 +317,125 @@
 
   const saved = JSON.parse(localStorage.getItem("concierge_config") || "null") || defaultData;
 
-  document.getElementById("brandName").value = saved.brandName || "";
+  document.getElementById("brandName").value = saved.brandName || defaultData.brandName;
   document.getElementById("logoUrl").value = saved.logoUrl || "";
   document.getElementById("logoFilter").value = saved.logoFilter || "none";
-  document.getElementById("tagline").value = saved.tagline || "";
-  document.getElementById("greeting").value = saved.greeting || "";
+  document.getElementById("tagline").value = saved.tagline || defaultData.tagline;
+  document.getElementById("greeting").value = saved.greeting || defaultData.greeting;
   document.getElementById("mainColor").value = saved.mainColor || "#6e5340";
   document.getElementById("shopifyDomain").value = saved.shopifyDomain || "";
 
-  let currentPurposes = saved.purposes || [];
+  const navs = saved.navSettings || defaultData.navSettings;
+  document.getElementById("nav_label_ranking").value = navs.ranking?.label || "ランキング";
+  document.getElementById("nav_url_ranking").value = navs.ranking?.url || "";
+  document.getElementById("nav_show_ranking").value = String(navs.ranking?.show !== false);
 
-  function renderPurposes() {
-    const container = document.getElementById("purposesContainer");
-    container.innerHTML = "";
+  document.getElementById("nav_label_category").value = navs.category?.label || "カテゴリ";
+  document.getElementById("nav_url_category").value = navs.category?.url || "";
+  document.getElementById("nav_show_category").value = String(navs.category?.show !== false);
 
-    currentPurposes.forEach((purpose, pIndex) => {
-      const pDiv = document.createElement("div");
-      pDiv.className = "purpose-card";
-      pDiv.innerHTML = `
-        <div class="card-header">
-          <span>大本 ➔ 目的 #${pIndex + 1} (ID: ${purpose.id})</span>
-          <button class="btn-danger" type="button" onclick="removePurpose(${pIndex})">この目的を削除</button>
-        </div>
-        <div class="grid-2">
-          <label class="field">目的のラベル名
-            <input type="text" class="p-label" value="${purpose.label}" data-index="${pIndex}">
-          </label>
-          <label class="field">目的の説明（サブテキスト）
-            <input type="text" class="p-hint" value="${purpose.hint || ''}" data-index="${pIndex}">
-          </label>
-        </div>
-        <label class="field" style="margin-top: 12px;">大本カード画像 URL
-          <input type="url" class="p-image" value="${purpose.image || ''}" data-index="${pIndex}" placeholder="https://...">
-        </label>
-        
-        <div style="margin-top: 16px; border-top: 1px dashed var(--color-line); padding-top: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong style="font-size: 13px; color: var(--color-accent);">└ 紐づくカテゴリ一覧</strong>
-            <button class="btn-secondary" type="button" onclick="addCategory(${pIndex})" style="padding: 6px 12px; font-size: 11px;">+ カテゴリを追加</button>
-          </div>
-          <div class="categories-container" data-purpose-index="${pIndex}"></div>
-        </div>
-      `;
+  document.getElementById("nav_label_material").value = navs.material?.label || "素材";
+  document.getElementById("nav_url_material").value = navs.material?.url || "";
+  document.getElementById("nav_show_material").value = String(navs.material?.show !== false);
 
-      const catContainer = pDiv.querySelector(".categories-container");
-      purpose.categories.forEach((cat, cIndex) => {
-        const cDiv = document.createElement("div");
-        cDiv.className = "category-card";
-        cDiv.innerHTML = `
-          <div class="card-header">
-            <span>階層 ➔ カテゴリ #${cIndex + 1} (ID: ${cat.id})</span>
-            <button class="btn-danger" type="button" onclick="removeCategory(${pIndex}, ${cIndex})">カテゴリ削除</button>
-          </div>
-          <div class="grid-2">
-            <label class="field">カテゴリ名
-              <input type="text" class="c-label" value="${cat.label}" data-p="${pIndex}" data-c="${cIndex}">
-            </label>
-            <label class="field">サブヒント説明
-              <input type="text" class="c-hint" value="${cat.hint || ''}" data-p="${pIndex}" data-c="${cIndex}">
-            </label>
-          </div>
-          <label class="field" style="margin-top: 10px;">カテゴリ/素材カード画像 URL
-            <input type="url" class="c-image" value="${cat.image || ''}" data-p="${pIndex}" data-c="${cIndex}" placeholder="https://...">
-          </label>
+  document.getElementById("nav_label_budget").value = navs.budget?.label || "金額";
+  document.getElementById("nav_url_budget").value = navs.budget?.url || "";
+  document.getElementById("nav_show_budget").value = String(navs.budget?.show !== false);
 
-          <label class="field" style="margin-top: 10px;">提案モード
-            <select class="c-mode" data-p="${pIndex}" data-c="${cIndex}" onchange="toggleMode(this, ${pIndex}, ${cIndex})">
-              <option value="dynamic" ${cat.mode === 'dynamic' ? 'selected' : ''}>自動抽出（キーワード・タグ・価格帯で上位3つ提案）</option>
-              <option value="manual" ${cat.mode === 'manual' ? 'selected' : ''}>固定指定（おすすめURLを3つ直接指定）</option>
-            </select>
-          </label>
+  let currentPurposes = saved.purposes || defaultData.purposes;
 
-          <div class="mode-box" id="mode-box-${pIndex}-${cIndex}">
-            ${cat.mode === 'manual' ? `
-              <label class="field">おすすめ商品 URL 1番目
-                <input type="url" class="c-url" value="${cat.manualUrls?.[0] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="0" placeholder="https://...">
-              </label>
-              <label class="field">おすすめ商品 URL 2番目
-                <input type="url" class="c-url" value="${cat.manualUrls?.[1] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="1" placeholder="https://...">
-              </label>
-              <label class="field">おすすめ商品 URL 3番目
-                <input type="url" class="c-url" value="${cat.manualUrls?.[2] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="2" placeholder="https://...">
-              </label>
-            ` : `
-              <label class="field">判定キーワード（カンマ区切り）
-                <input type="text" class="c-keywords" value="${cat.keywords || ''}" data-p="${pIndex}" data-c="${cIndex}">
-              </label>
-              <div class="grid-2">
-                <label class="field">Shopify必須タグ
-                  <input type="text" class="c-tags" value="${cat.tags || ''}" data-p="${pIndex}" data-c="${cIndex}">
-                </label>
-                <label class="field">並び替え順（ソート）
-                  <select class="c-sort" data-p="${pIndex}" data-c="${cIndex}">
-                    <option value="price_asc" ${cat.sortBy === 'price_asc' ? 'selected' : ''}>価格が安い順</option>
-                    <option value="price_desc" ${cat.sortBy === 'price_desc' ? 'selected' : ''}>価格が高い順</option>
-                    <option value="tag_match" ${cat.sortBy === 'tag_match' ? 'selected' : ''}>タグ一致度優先</option>
-                  </select>
-                </label>
-              </div>
-              <div class="grid-2">
-                <label class="field">最低価格（円）
-                  <input type="text" class="c-min" value="${cat.minPrice ?? 0}" data-p="${pIndex}" data-c="${cIndex}">
-                </label>
-                <label class="field">最高価格（円）
-                  <input type="text" class="c-max" value="${cat.maxPrice ?? 9999999}" data-p="${pIndex}" data-c="${cIndex}">
-                </label>
-              </div>
-            `}
-          </div>
-        `;
-        catContainer.appendChild(cDiv);
-      });
+  // 階層データをスプレッドシート用のフラットな配列に変換して描画
+  function renderSpreadsheet() {
+    const tbody = document.getElementById("spreadsheetBody");
+    tbody.innerHTML = "";
 
-      container.appendChild(pDiv);
+    currentPurposes.forEach((p, pIdx) => {
+      if (!p.categories || p.categories.length === 0) {
+        // カテゴリが0件の場合の空行
+        appendRow(tbody, pIdx, -1, p, { id: "", label: "", image: "", mode: "dynamic", keywords: "", manualUrls: ["","",""], tags: "", minPrice: 0 });
+      } else {
+        p.categories.forEach((c, cIdx) => {
+          appendRow(tbody, pIdx, cIdx, p, c);
+        });
+      }
     });
   }
 
-  // 入力値の同期
-  document.addEventListener("input", (e) => {
-    const target = e.target;
-    const p = target.dataset.p;
-    const c = target.dataset.c;
+  function appendRow(tbody, pIdx, cIdx, p, c) {
+    const tr = document.createElement("tr");
+    const isManual = c.mode === "manual";
+    const keywordOrUrlVal = isManual ? (c.manualUrls?.[0] || "") : (c.keywords || "");
 
-    if (target.classList.contains("p-label")) {
-      currentPurposes[target.dataset.index].label = target.value;
-    } else if (target.classList.contains("p-hint")) {
-      currentPurposes[target.dataset.index].hint = target.value;
-    } else if (target.classList.contains("p-image")) {
-      currentPurposes[target.dataset.index].image = target.value;
-    } else if (target.classList.contains("c-label")) {
-      currentPurposes[p].categories[c].label = target.value;
-    } else if (target.classList.contains("c-hint")) {
-      currentPurposes[p].categories[c].hint = target.value;
-    } else if (target.classList.contains("c-image")) {
-      currentPurposes[p].categories[c].image = target.value;
-    } else if (target.classList.contains("c-keywords")) {
-      currentPurposes[p].categories[c].keywords = target.value;
-    } else if (target.classList.contains("c-tags")) {
-      currentPurposes[p].categories[c].tags = target.value;
-    } else if (target.classList.contains("c-min")) {
-      currentPurposes[p].categories[c].minPrice = parseInt(target.value) || 0;
-    } else if (target.classList.contains("c-max")) {
-      currentPurposes[p].categories[c].maxPrice = parseInt(target.value) || 9999999;
-    } else if (target.classList.contains("c-url")) {
-      const pos = target.dataset.pos;
-      if (!currentPurposes[p].categories[c].manualUrls) currentPurposes[p].categories[c].manualUrls = ["", "", ""];
-      currentPurposes[p].categories[c].manualUrls[pos] = target.value;
+    tr.innerHTML = `
+      <td><input type="text" class="r-p-id" value="${p.id}" data-p="${pIdx}" style="width:90px;"></td>
+      <td><input type="text" class="r-p-label" value="${p.label}" data-p="${pIdx}" style="width:130px;"></td>
+      <td><input type="text" class="r-p-hint" value="${p.hint || ''}" data-p="${pIdx}" style="width:130px;"></td>
+      <td><input type="url" class="r-p-image" value="${p.image || ''}" data-p="${pIdx}" placeholder="https://..." style="width:120px;"></td>
+      <td><input type="text" class="r-c-id" value="${c.id}" data-p="${pIdx}" data-c="${cIdx}" style="width:90px;"></td>
+      <td><input type="text" class="r-c-label" value="${c.label}" data-p="${pIdx}" data-c="${cIdx}" style="width:130px;"></td>
+      <td><input type="url" class="r-c-image" value="${c.image || ''}" data-p="${pIdx}" data-c="${cIdx}" placeholder="https://..." style="width:120px;"></td>
+      <td>
+        <select class="r-c-mode" data-p="${pIdx}" data-c="${cIdx}">
+          <option value="dynamic" ${!isManual ? 'selected' : ''}>自動抽出</option>
+          <option value="manual" ${isManual ? 'selected' : ''}>固定URL</option>
+        </select>
+      </td>
+      <td><input type="text" class="r-c-kw" value="${keywordOrUrlVal}" data-p="${pIdx}" data-c="${cIdx}" placeholder="${isManual ? '商品URL' : 'キーワード'}" style="width:150px;"></td>
+      <td><input type="text" class="r-c-tags" value="${c.tags || ''}" data-p="${pIdx}" data-c="${cIdx}" style="width:100px;"></td>
+      <td><input type="text" class="r-c-min" value="${c.minPrice ?? 0}" data-p="${pIdx}" data-c="${cIdx}" style="width:70px;"></td>
+      <td><button class="btn-danger" type="button" onclick="deleteRow(${pIdx}, ${cIdx})">削除</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // 入力時の即時データ反映
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    const pIdx = t.dataset.p;
+    const cIdx = t.dataset.c;
+    if (pIdx === undefined) return;
+
+    if (t.classList.contains("r-p-id")) currentPurposes[pIdx].id = t.value;
+    if (t.classList.contains("r-p-label")) currentPurposes[pIdx].label = t.value;
+    if (t.classList.contains("r-p-hint")) currentPurposes[pIdx].hint = t.value;
+    if (t.classList.contains("r-p-image")) currentPurposes[pIdx].image = t.value;
+
+    if (cIdx !== undefined && cIdx !== "-1") {
+      const cat = currentPurposes[pIdx].categories[cIdx];
+      if (t.classList.contains("r-c-id")) cat.id = t.value;
+      if (t.classList.contains("r-c-label")) cat.label = t.value;
+      if (t.classList.contains("r-c-image")) cat.image = t.value;
+      if (t.classList.contains("r-c-kw")) {
+        if (cat.mode === "manual") {
+          if (!cat.manualUrls) cat.manualUrls = ["", "", ""];
+          cat.manualUrls[0] = t.value;
+        } else {
+          cat.keywords = t.value;
+        }
+      }
+      if (t.classList.contains("r-c-tags")) cat.tags = t.value;
+      if (t.classList.contains("r-c-min")) cat.minPrice = parseInt(t.value) || 0;
     }
   });
 
   document.addEventListener("change", (e) => {
-    const target = e.target;
-    const p = target.dataset.p;
-    const c = target.dataset.c;
-    if (target.classList.contains("c-sort")) {
-      currentPurposes[p].categories[c].sortBy = target.value;
+    const t = e.target;
+    const pIdx = t.dataset.p;
+    const cIdx = t.dataset.c;
+    if (t.classList.contains("r-c-mode") && pIdx !== undefined && cIdx !== undefined) {
+      currentPurposes[pIdx].categories[cIdx].mode = t.value;
+      renderSpreadsheet();
     }
   });
 
-  window.toggleMode = function(selectEl, p, c) {
-    currentPurposes[p].categories[c].mode = selectEl.value;
-    if (!currentPurposes[p].categories[c].manualUrls) currentPurposes[p].categories[c].manualUrls = ["", "", ""];
-    renderPurposes();
-  };
-
-  window.addPurpose = function() {
-    currentPurposes.push({
-      id: "purpose_" + Date.now(),
-      label: "新しい目的",
-      hint: "説明文",
-      image: "",
-      categories: [
-        {
-          id: "cat_" + Date.now(),
-          label: "カテゴリ名",
-          hint: "",
-          image: "",
-          mode: "dynamic",
-          manualUrls: ["", "", ""],
-          keywords: "",
-          tags: "",
-          minPrice: 0,
-          maxPrice: 9999999,
-          sortBy: "price_desc"
-        }
-      ]
-    });
-    renderPurposes();
-  };
-
-  window.removePurpose = function(pIndex) {
-    if (confirm("この目的と紐づくカテゴリ設定を削除しますか？")) {
-      currentPurposes.splice(pIndex, 1);
-      renderPurposes();
+  window.addRow = function() {
+    // 最初の目的に新規カテゴリ行を追加、目的がなければ新規目的を作る
+    if (currentPurposes.length === 0) {
+      currentPurposes.push({ id: "purpose_" + Date.now(), label: "新規目的", hint: "", image: "", categories: [] });
     }
-  };
-
-  window.addCategory = function(pIndex) {
-    currentPurposes[pIndex].categories.push({
+    currentPurposes[0].categories.push({
       id: "cat_" + Date.now(),
-      label: "新しいカテゴリ",
+      label: "新規カテゴリ",
       hint: "",
       image: "",
       mode: "dynamic",
@@ -459,19 +446,24 @@
       maxPrice: 9999999,
       sortBy: "price_desc"
     });
-    renderPurposes();
+    renderSpreadsheet();
   };
 
-  window.removeCategory = function(pIndex, cIndex) {
-    if (confirm("このカテゴリを削除しますか？")) {
-      currentPurposes[pIndex].categories.splice(cIndex, 1);
-      renderPurposes();
+  window.deleteRow = function(pIdx, cIdx) {
+    if (cIdx === -1) {
+      currentPurposes.splice(pIdx, 1);
+    } else {
+      currentPurposes[pIdx].categories.splice(cIdx, 1);
+      if (currentPurposes[pIdx].categories.length === 0) {
+        currentPurposes.splice(pIdx, 1);
+      }
     }
+    renderSpreadsheet();
   };
 
-  document.getElementById("addPurposeBtn").addEventListener("click", addPurpose);
+  document.getElementById("addRowBtn").addEventListener("click", addRow);
 
-  // --- CSV エクスポート機能 ---
+  // --- CSV エクスポート ---
   document.getElementById("exportCsvBtn").addEventListener("click", () => {
     let csvRows = [];
     csvRows.push([
@@ -484,16 +476,14 @@
     currentPurposes.forEach(p => {
       p.categories.forEach(c => {
         const urls = c.manualUrls || ["", "", ""];
-        const row = [
+        csvRows.push([
           p.id, `"${p.label}"`, `"${p.hint || ''}"`, `"${p.image || ''}"`,
           c.id, `"${c.label}"`, `"${c.hint || ''}"`, `"${c.image || ''}"`,
           c.mode || "dynamic",
           `"${urls[0] || ''}"`, `"${urls[1] || ''}"`, `"${urls[2] || ''}"`,
           `"${c.keywords || ''}"`, `"${c.tags || ''}"`,
-          c.minPrice ?? 0, c.maxPrice ?? 9999999,
-          c.sortBy || "price_desc"
-        ];
-        csvRows.push(row.join(","));
+          c.minPrice ?? 0, c.maxPrice ?? 9999999, c.sortBy || "price_desc"
+        ].join(","));
       });
     });
 
@@ -506,82 +496,6 @@
     URL.revokeObjectURL(url);
   });
 
-  // --- サンプルCSVダウンロード ---
-  document.getElementById("downloadCsvSampleBtn").addEventListener("click", () => {
-    const sampleData = [
-      "purpose_id,purpose_label,purpose_hint,purpose_image,category_id,category_label,category_hint,category_image,mode,url_1,url_2,url_3,keywords,tags,min_price,max_price,sort_by",
-      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,,bag,バッグ,トートやリュックなど,,dynamic,,,,\"バッグ, トート, リュック\",\"\",0,9999999,price_desc"
-    ];
-    const blob = new Blob(["\uFEFF" + sampleData.join("\n")], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "concierge_sample.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // --- CSV インポート機能 ---
-  document.getElementById("csvFileInput").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      try {
-        const text = event.target.result;
-        const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== "");
-        if (lines.length < 2) return;
-
-        const parseCsvLine = (line) => {
-          let result = [];
-          let start = 0;
-          let inQuotes = false;
-          for (let i = 0; i < line.length; i++) {
-            if (line[i] === '"') inQuotes = !inQuotes;
-            else if (line[i] === ',' && !inQuotes) {
-              result.push(line.substring(start, i).replace(/^"|"$/g, '').replace(/""/g, '"'));
-              start = i + 1;
-            }
-          }
-          result.push(line.substring(start).replace(/^"|"$/g, '').replace(/""/g, '"'));
-          return result;
-        };
-
-        const purposesMap = {};
-        for (let i = 1; i < lines.length; i++) {
-          const cols = parseCsvLine(lines[i]);
-          if (cols.length < 17) continue;
-
-          const [
-            pId, pLabel, pHint, pImage,
-            cId, cLabel, cHint, cImage,
-            mode, url1, url2, url3,
-            keywords, tags, minPrice, maxPrice, sortBy
-          ] = cols;
-
-          if (!purposesMap[pId]) {
-            purposesMap[pId] = { id: pId, label: pLabel, hint: pHint, image: pImage || "", categories: [] };
-          }
-          purposesMap[pId].categories.push({
-            id: cId, label: cLabel, hint: cHint, image: cImage || "",
-            mode: mode || "dynamic", manualUrls: [url1, url2, url3],
-            keywords: keywords, tags: tags,
-            minPrice: parseInt(minPrice) || 0, maxPrice: parseInt(maxPrice) || 9999999,
-            sortBy: sortBy || "price_desc"
-          });
-        }
-
-        currentPurposes = Object.values(purposesMap);
-        renderPurposes();
-        document.getElementById("csvMsg").textContent = "CSVの読み込みに成功しました！下の「設定をすべて保存する」を押してください。";
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    reader.readAsText(file, "UTF-8");
-  });
-
   // 保存ボタン
   document.getElementById("saveBtn").addEventListener("click", () => {
     const config = {
@@ -592,6 +506,12 @@
       greeting: document.getElementById("greeting").value,
       mainColor: document.getElementById("mainColor").value,
       shopifyDomain: document.getElementById("shopifyDomain").value,
+      navSettings: {
+        ranking: { label: document.getElementById("nav_label_ranking").value, url: document.getElementById("nav_url_ranking").value, show: document.getElementById("nav_show_ranking").value === "true" },
+        category: { label: document.getElementById("nav_label_category").value, url: document.getElementById("nav_url_category").value, show: document.getElementById("nav_show_category").value === "true" },
+        material: { label: document.getElementById("nav_label_material").value, url: document.getElementById("nav_url_material").value, show: document.getElementById("nav_show_material").value === "true" },
+        budget: { label: document.getElementById("nav_label_budget").value, url: document.getElementById("nav_url_budget").value, show: document.getElementById("nav_show_budget").value === "true" }
+      },
       purposes: currentPurposes
     };
     localStorage.setItem("concierge_config", JSON.stringify(config));
@@ -600,7 +520,7 @@
     setTimeout(() => { msg.textContent = ""; }, 4000);
   });
 
-  renderPurposes();
+  renderSpreadsheet();
 </script>
 </body>
 </html>
