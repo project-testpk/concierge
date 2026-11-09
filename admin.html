@@ -105,15 +105,26 @@
   .btn-primary:hover { opacity: 0.9; }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .note { font-size: 11px; color: var(--color-muted); line-height: 1.6; margin-top: 4px; }
+  .note { font-size: 12px; color: var(--color-muted); line-height: 1.6; margin-top: 4px; }
   .mode-box { border-left: 3px solid var(--color-accent); padding-left: 12px; margin-top: 12px; }
+
+  /* CSVガイド用スタイル */
+  .csv-guide-box {
+    background: #f4f0eb;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .csv-guide-box code { background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-line); color: var(--color-main); }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>
       コンシェルジュ 運用管理パネル
-      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">階層・レコメンド設定</span>
+      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">CSV一括登録対応</span>
     </h1>
     <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面（index.html）へ即時反映されます。</p>
 
@@ -157,13 +168,39 @@
       </label>
     </div>
 
-    <!-- 3. ツリー階層・レコメンド詳細設定 -->
+    <!-- 3. CSV一括登録・入出力セクション -->
     <div class="section">
       <h2>
-        3. 階層・レコメンド詳細設定
+        3. 階層・レコメンド設定のCSV一括登録 / エクスポート
+      </h2>
+      <p class="note">多くのカテゴリや条件をまとめて管理したい場合は、CSVファイルで一括インポート・エクスポートが可能です。</p>
+      
+      <div class="csv-guide-box">
+        <strong>📋 CSVの書き方・ルール（誰でもわかる解説）</strong>
+        <ul style="margin: 8px 0 0 20px; padding: 0; line-height: 1.7;">
+          <li>1行目はヘッダー（見出し）として必ずそのまま残してください。</li>
+          <li>同じ <code>purpose_id</code>（目的ID）を持つ行は、同じ大本グループに自動まとめられます。</li>
+          <li><code>mode</code> 列には <code>dynamic</code>（自動抽出） または <code>manual</code>（固定URL3枠）を指定します。</li>
+        </ul>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+          <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSVをダウンロード</button>
+          <button class="btn-secondary" type="button" id="exportCsvBtn">📤 現在の設定をCSVで書き出す</button>
+        </div>
+      </div>
+
+      <label class="field">CSVファイルをアップロードして一括反映
+        <input type="file" id="csvFileInput" accept=".csv" style="padding: 10px; background: #fff;">
+      </label>
+      <p id="csvMsg" style="font-size: 12px; color: #4a7c59; font-weight: 500; margin-top: 4px;"></p>
+    </div>
+
+    <!-- 4. ツリー階層・レコメンド詳細設定（個別編集） -->
+    <div class="section">
+      <h2>
+        4. 個別ツリー階層・レコメンド設定
         <button class="btn-secondary" type="button" id="addPurposeBtn">+ 目的（大本）を追加</button>
       </h2>
-      <p class="note" style="margin-bottom: 16px;">例：「ご自身用（普段使い）」「ギフト（贈り物）」などの大本を設定し、その下の階層（カテゴリ）や提案方法（固定3枠 or タグ自動ソート）を細かく指定できます。</p>
+      <p class="note" style="margin-bottom: 16px;">ここで直接編集するか、上記のCSV一括登録で上書きすることができます。</p>
       
       <div id="purposesContainer"></div>
     </div>
@@ -177,7 +214,6 @@
   </div>
 
 <script>
-  // デフォルトの初期設定データ構造
   const defaultData = {
     brandName: "DAYSART -Classic-",
     logoUrl: "",
@@ -196,7 +232,7 @@
             id: "bag",
             label: "バッグ",
             hint: "トート、リュック、ショルダーなど",
-            mode: "dynamic", // "manual" or "dynamic"
+            mode: "dynamic",
             manualUrls: ["", "", ""],
             keywords: "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ",
             tags: "",
@@ -242,7 +278,6 @@
 
   const saved = JSON.parse(localStorage.getItem("concierge_config") || "null") || defaultData;
 
-  // フォームに基本値を反映
   document.getElementById("brandName").value = saved.brandName || "";
   document.getElementById("logoUrl").value = saved.logoUrl || "";
   document.getElementById("logoFilter").value = saved.logoFilter || "none";
@@ -253,7 +288,6 @@
 
   let currentPurposes = saved.purposes || [];
 
-  // ツリー構造を描画する関数
   function renderPurposes() {
     const container = document.getElementById("purposesContainer");
     container.innerHTML = "";
@@ -263,11 +297,11 @@
       pDiv.className = "purpose-card";
       pDiv.innerHTML = `
         <div class="card-header">
-          <span>大本 ➔ 目的 #${pIndex + 1}</span>
+          <span>大本 ➔ 目的 #${pIndex + 1} (ID: ${purpose.id})</span>
           <button class="btn-danger" type="button" onclick="removePurpose(${pIndex})">この目的を削除</button>
         </div>
         <div class="grid-2">
-          <label class="field">目的のラベル名（例: ご自身用）
+          <label class="field">目的のラベル名
             <input type="text" class="p-label" value="${purpose.label}" data-index="${pIndex}">
           </label>
           <label class="field">目的の説明（サブテキスト）
@@ -290,11 +324,11 @@
         cDiv.className = "category-card";
         cDiv.innerHTML = `
           <div class="card-header">
-            <span>階層 ➔ カテゴリ #${cIndex + 1}</span>
+            <span>階層 ➔ カテゴリ #${cIndex + 1} (ID: ${cat.id})</span>
             <button class="btn-danger" type="button" onclick="removeCategory(${pIndex}, ${cIndex})">カテゴリ削除</button>
           </div>
           <div class="grid-2">
-            <label class="field">カテゴリ名（例: バッグ、財布）
+            <label class="field">カテゴリ名
               <input type="text" class="c-label" value="${cat.label}" data-p="${pIndex}" data-c="${cIndex}">
             </label>
             <label class="field">サブヒント説明
@@ -302,10 +336,10 @@
             </label>
           </div>
 
-          <label class="field" style="margin-top: 10px;">提案モード（3商品の選出方法）
+          <label class="field" style="margin-top: 10px;">提案モード
             <select class="c-mode" data-p="${pIndex}" data-c="${cIndex}" onchange="toggleMode(this, ${pIndex}, ${cIndex})">
-              <option value="dynamic" ${cat.mode === 'dynamic' ? 'selected' : ''}>自動抽出（キーワード・Shopifyタグ・価格帯・ソートで上位3つを動的提案）</option>
-              <option value="manual" ${cat.mode === 'manual' ? 'selected' : ''}>固定指定（おすすめの3商品のURLを直接指定する）</option>
+              <option value="dynamic" ${cat.mode === 'dynamic' ? 'selected' : ''}>自動抽出（キーワード・タグ・価格帯で上位3つ提案）</option>
+              <option value="manual" ${cat.mode === 'manual' ? 'selected' : ''}>固定指定（おすすめURLを3つ直接指定）</option>
             </select>
           </label>
 
@@ -321,11 +355,11 @@
                 <input type="url" class="c-url" value="${cat.manualUrls?.[2] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="2" placeholder="https://...">
               </label>
             ` : `
-              <label class="field">判定キーワード（タイトルに含まれる単語：カンマ区切り）
+              <label class="field">判定キーワード（カンマ区切り）
                 <input type="text" class="c-keywords" value="${cat.keywords || ''}" data-p="${pIndex}" data-c="${cIndex}">
               </label>
               <div class="grid-2">
-                <label class="field">Shopify必須タグ（任意：例 gift, pickup）
+                <label class="field">Shopify必須タグ
                   <input type="text" class="c-tags" value="${cat.tags || ''}" data-p="${pIndex}" data-c="${cIndex}">
                 </label>
                 <label class="field">並び替え順（ソート）
@@ -354,7 +388,7 @@
     });
   }
 
-  // 入力内容をリアルタイムでオブジェクトに同期するイベントリスナー
+  // 入力値の同期
   document.addEventListener("input", (e) => {
     const target = e.target;
     const p = target.dataset.p;
@@ -402,15 +436,15 @@
     currentPurposes.push({
       id: "purpose_" + Date.now(),
       label: "新しい目的",
-      hint: "目的の説明文を入力",
+      hint: "説明文",
       categories: [
         {
           id: "cat_" + Date.now(),
           label: "カテゴリ名",
-          hint: "カテゴリの説明文",
+          hint: "",
           mode: "dynamic",
           manualUrls: ["", "", ""],
-          keywords: "財布, バッグ",
+          keywords: "",
           tags: "",
           minPrice: 0,
           maxPrice: 100000,
@@ -422,7 +456,7 @@
   };
 
   window.removePurpose = function(pIndex) {
-    if (confirm("この目的と紐づくカテゴリ設定をすべて削除しますか？")) {
+    if (confirm("この目的と紐づくカテゴリ設定を削除しますか？")) {
       currentPurposes.splice(pIndex, 1);
       renderPurposes();
     }
@@ -453,7 +487,139 @@
 
   document.getElementById("addPurposeBtn").addEventListener("click", addPurpose);
 
-  // 保存ボタン処理
+  // --- CSV エクスポート機能 ---
+  document.getElementById("exportCsvBtn").addEventListener("click", () => {
+    let csvRows = [];
+    // ヘッダー
+    csvRows.push([
+      "purpose_id", "purpose_label", "purpose_hint",
+      "category_id", "category_label", "category_hint",
+      "mode", "url_1", "url_2", "url_3",
+      "keywords", "tags", "min_price", "max_price", "sort_by"
+    ].join(","));
+
+    currentPurposes.forEach(p => {
+      p.categories.forEach(c => {
+        const urls = c.manualUrls || ["", "", ""];
+        const row = [
+          p.id, `"${p.label}"`, `"${p.hint || ''}"`,
+          c.id, `"${c.label}"`, `"${c.hint || ''}"`,
+          c.mode || "dynamic",
+          `"${urls[0] || ''}"`, `"${urls[1] || ''}"`, `"${urls[2] || ''}"`,
+          `"${c.keywords || ''}"`, `"${c.tags || ''}"`,
+          c.minPrice ?? 0, c.maxPrice ?? 200000,
+          c.sortBy || "price_desc"
+        ];
+        csvRows.push(row.join(","));
+      });
+    });
+
+    const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "concierge_settings.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // --- サンプルCSVダウンロード ---
+  document.getElementById("downloadCsvSampleBtn").addEventListener("click", () => {
+    const sampleData = [
+      "purpose_id,purpose_label,purpose_hint,category_id,category_label,category_hint,mode,url_1,url_2,url_3,keywords,tags,min_price,max_price,sort_by",
+      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,bag,バッグ,トートやリュックなど,dynamic,,,,\"バッグ, トート, リュック\",\"\",0,150000,price_desc",
+      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,wallet,財布・革小物,長財布や名刺入れ,dynamic,,,,\"財布, ウォレット, 名刺入れ\",\"\",0,50000,price_asc",
+      "gift,ギフト（贈り物）,大切な方へ感謝を込めて,gift-all,ギフト全般・小物,贈りやすい小物アイテム,dynamic,,,,\"ギフト, プレゼント, キーケース\",\"gift\",0,30000,tag_match"
+    ];
+    const blob = new Blob(["\uFEFF" + sampleData.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "concierge_sample.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // --- CSV インポート機能 ---
+  document.getElementById("csvFileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      try {
+        const text = event.target.result;
+        const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== "");
+        if (lines.length < 2) {
+          alert("有効なCSVデータが見つかりませんでした。");
+          return;
+        }
+
+        // CSVパース（簡易パーサー：ダブルクォート考慮）
+        const parseCsvLine = (line) => {
+          let result = [];
+          let start = 0;
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            if (line[i] === '"') {
+              inQuotes = !inQuotes;
+            } else if (line[i] === ',' && !inQuotes) {
+              result.push(line.substring(start, i).replace(/^"|"$/g, '').replace(/""/g, '"'));
+              start = i + 1;
+            }
+          }
+          result.push(line.substring(start).replace(/^"|"$/g, '').replace(/""/g, '"'));
+          return result;
+        };
+
+        const purposesMap = {};
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCsvLine(lines[i]);
+          if (cols.length < 15) continue;
+
+          const [
+            pId, pLabel, pHint,
+            cId, cLabel, cHint,
+            mode, url1, url2, url3,
+            keywords, tags, minPrice, maxPrice, sortBy
+          ] = cols;
+
+          if (!purposesMap[pId]) {
+            purposesMap[pId] = {
+              id: pId,
+              label: pLabel,
+              hint: pHint,
+              categories: []
+            };
+          }
+
+          purposesMap[pId].categories.push({
+            id: cId,
+            label: cLabel,
+            hint: cHint,
+            mode: mode || "dynamic",
+            manualUrls: [url1, url2, url3],
+            keywords: keywords,
+            tags: tags,
+            minPrice: parseInt(minPrice) || 0,
+            maxPrice: parseInt(maxPrice) || 200000,
+            sortBy: sortBy || "price_desc"
+          });
+        }
+
+        currentPurposes = Object.values(purposesMap);
+        renderPurposes();
+        document.getElementById("csvMsg").textContent = "CSVの読み込みに成功しました！下の「設定をすべて保存する」を押して確定してください。";
+      } catch (err) {
+        console.error(err);
+        alert("CSVのパース中にエラーが発生しました。ファイル形式をご確認ください。");
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  });
+
+  // 保存ボタン
   document.getElementById("saveBtn").addEventListener("click", () => {
     const config = {
       brandName: document.getElementById("brandName").value,
