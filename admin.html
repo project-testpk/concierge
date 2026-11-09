@@ -10,56 +10,138 @@
 <style>
   :root {
     --color-main: #6e5340;
+    --color-main-deep: #2c221b;
     --color-bg: #f9f8f6;
     --color-surface: #ffffff;
     --color-text: #2b2520;
+    --color-muted: #8c8278;
     --color-line: #eae4db;
+    --color-accent: #9e7d5d;
     --radius: 12px;
+    --shadow: 0 10px 30px rgba(43, 37, 32, 0.03);
   }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
     padding: 40px 20px;
     font-family: "Zen Kaku Gothic New", sans-serif;
     background: var(--color-bg);
     color: var(--color-text);
+    line-height: 1.6;
   }
-  .wrap { max-width: 720px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: 0 10px 30px rgba(43, 37, 32, 0.03); }
-  h1 { margin-top: 0; font-size: 20px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; }
-  .section { margin-top: 28px; }
-  .section h2 { font-size: 14px; color: var(--color-main); margin-bottom: 14px; letter-spacing: 0.04em; }
-  .field { display: grid; gap: 8px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
-  input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; box-sizing: border-box; outline: none; }
+  .wrap { max-width: 840px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
+  h1 { margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
+  .section { margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 24px; }
+  .section h2 { font-size: 15px; color: var(--color-main); margin-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
+  
+  .field { display: grid; gap: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
+  input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  input:focus, select:focus { border-color: var(--color-accent); }
   input[type="color"] { width: 60px; height: 40px; border: 1px solid var(--color-line); border-radius: 8px; padding: 2px; background: #faf8f5; cursor: pointer; }
-  .btn { background: var(--color-main); color: #fff; border: none; padding: 14px 24px; font-size: 14px; border-radius: var(--radius); cursor: pointer; font-weight: 500; letter-spacing: 0.06em; width: 100%; transition: opacity 0.2s; }
-  .btn:hover { opacity: 0.9; }
-  .note { font-size: 11px; color: #8c8278; line-height: 1.6; margin-top: 4px; }
+
+  /* 階層カード用スタイル */
+  .purpose-card, .category-card {
+    background: #faf8f5;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .category-card {
+    background: #ffffff;
+    margin-top: 12px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-main-deep);
+  }
+  .btn-danger {
+    background: #fff0f0;
+    color: #c94a4a;
+    border: 1px solid #ffd6d6;
+    padding: 6px 12px;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .btn-danger:hover { background: #ffe3e3; }
+
+  .btn-secondary {
+    background: #f0ece6;
+    color: var(--color-text);
+    border: 1px solid var(--color-line);
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-secondary:hover { background: #e4dfd5; }
+
+  .btn-primary {
+    background: var(--color-main);
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    font-size: 15px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    width: 100%;
+    transition: opacity 0.2s;
+    margin-top: 24px;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .note { font-size: 11px; color: var(--color-muted); line-height: 1.6; margin-top: 4px; }
+  .mode-box { border-left: 3px solid var(--color-accent); padding-left: 12px; margin-top: 12px; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>コンシェルジュ 運用管理パネル</h1>
-    <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面へ即時反映されます。</p>
+    <h1>
+      コンシェルジュ 運用管理パネル
+      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">階層・レコメンド設定</span>
+    </h1>
+    <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面（index.html）へ即時反映されます。</p>
 
-    <div class="section">
+    <!-- 1. 基本設定 -->
+    <div class="section" style="border-top: none; padding-top: 0;">
       <h2>1. ブランド・基本設定</h2>
-      <label class="field">ブランド名
-        <input type="text" id="brandName" value="DAYSART -Classic-">
-      </label>
-      <label class="field">ブランドロゴ画像 URL (PNG等)
-        <input type="url" id="logoUrl" placeholder="https://...">
-      </label>
-      <label class="field">ロゴのカラーフィルター
-        <select id="logoFilter">
-          <option value="none">元の画像のまま（カラー無加工）</option>
-          <option value="sepia">セピア・アンティーク調に馴染ませる</option>
-          <option value="dark">シックなダークトーンにする</option>
-          <option value="monochrome">モノトーンにする</option>
-        </select>
-      </label>
-      <label class="field">キャッチコピー
-        <input type="text" id="tagline" value="革と対話するコンシェルジュ">
-      </label>
-      <label class="field">最初の挨拶メッセージ（目的を尋ねる言葉）
+      <div class="grid-2">
+        <label class="field">ブランド名
+          <input type="text" id="brandName" value="DAYSART -Classic-">
+        </label>
+        <label class="field">キャッチコピー
+          <input type="text" id="tagline" value="革と対話するコンシェルジュ">
+        </label>
+      </div>
+      <div class="grid-2">
+        <label class="field">ブランドロゴ画像 URL
+          <input type="url" id="logoUrl" placeholder="https://...">
+        </label>
+        <label class="field">ロゴのカラーフィルター
+          <select id="logoFilter">
+            <option value="none">元の画像のまま（カラー無加工）</option>
+            <option value="sepia">セピア・アンティーク調</option>
+            <option value="dark">シックなダークトーン</option>
+            <option value="monochrome">モノトーン</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">最初の挨拶メッセージ
         <input type="text" id="greeting" value="ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。">
       </label>
       <label class="field">メインカラー
@@ -67,51 +149,311 @@
       </label>
     </div>
 
+    <!-- 2. Shopify基本設定 -->
     <div class="section">
-      <h2>2. Shopify同期・キーワード設定</h2>
-      <label class="field">Shopify ストア URL
+      <h2>2. Shopify連携設定</h2>
+      <label class="field">Shopify ストア ドメイン
         <input type="url" id="shopifyDomain" placeholder="https://daysart-classic.com">
       </label>
-      <label class="field">カテゴリ判定キーワード（バッグ用：カンマ区切り）
-        <input type="text" id="bagKeywords" value="バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ">
-      </label>
-      <label class="field">カテゴリ判定キーワード（財布・小物用：カンマ区切り）
-        <input type="text" id="walletKeywords" value="財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー">
-      </label>
     </div>
 
+    <!-- 3. ツリー階層・レコメンド詳細設定 -->
     <div class="section">
-      <h2>3. 予算（価格帯）設定</h2>
-      <label class="field">低価格帯の上限（円）
-        <input type="text" id="budgetLow" value="30000">
-      </label>
-      <label class="field">中価格帯の上限（円）
-        <input type="text" id="budgetMid" value="80000">
-      </label>
+      <h2>
+        3. 階層・レコメンド詳細設定
+        <button class="btn-secondary" type="button" id="addPurposeBtn">+ 目的（大本）を追加</button>
+      </h2>
+      <p class="note" style="margin-bottom: 16px;">例：「ご自身用（普段使い）」「ギフト（贈り物）」などの大本を設定し、その下の階層（カテゴリ）や提案方法（固定3枠 or タグ自動ソート）を細かく指定できます。</p>
+      
+      <div id="purposesContainer"></div>
     </div>
 
-    <button class="btn" id="saveBtn" type="button">設定を保存する</button>
-    <p id="statusMsg" style="margin-top: 12px; font-size: 12px; color: #4a7c59; text-align: center; font-weight: 500;"></p>
+    <button class="btn-primary" id="saveBtn" type="button">設定をすべて保存する</button>
+    <p id="statusMsg" style="margin-top: 12px; font-size: 13px; color: #4a7c59; text-align: center; font-weight: 500;"></p>
 
-    <div class="section" style="margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 20px;">
+    <div class="section" style="margin-top: 32px; padding-bottom: 0;">
       <a href="index.html" target="_blank" style="color: var(--color-main); font-weight: 500; text-decoration: none; font-size: 13px;">→ お客様用画面（index.html）を確認する</a>
     </div>
   </div>
 
 <script>
-  const saved = JSON.parse(localStorage.getItem("concierge_config") || "{}");
-  if (saved.brandName) document.getElementById("brandName").value = saved.brandName;
-  if (saved.logoUrl) document.getElementById("logoUrl").value = saved.logoUrl;
-  if (saved.logoFilter) document.getElementById("logoFilter").value = saved.logoFilter;
-  if (saved.tagline) document.getElementById("tagline").value = saved.tagline;
-  if (saved.greeting) document.getElementById("greeting").value = saved.greeting;
-  if (saved.mainColor) document.getElementById("mainColor").value = saved.mainColor;
-  if (saved.shopifyDomain) document.getElementById("shopifyDomain").value = saved.shopifyDomain;
-  if (saved.bagKeywords) document.getElementById("bagKeywords").value = saved.bagKeywords;
-  if (saved.walletKeywords) document.getElementById("walletKeywords").value = saved.walletKeywords;
-  if (saved.budgetLow) document.getElementById("budgetLow").value = saved.budgetLow;
-  if (saved.budgetMid) document.getElementById("budgetMid").value = saved.budgetMid;
+  // デフォルトの初期設定データ構造
+  const defaultData = {
+    brandName: "DAYSART -Classic-",
+    logoUrl: "",
+    logoFilter: "none",
+    tagline: "革と対話するコンシェルジュ",
+    greeting: "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。",
+    mainColor: "#6e5340",
+    shopifyDomain: "https://daysart-classic.com",
+    purposes: [
+      {
+        id: "self",
+        label: "ご自身用（普段使い）",
+        hint: "日々の暮らしやビジネスに寄り添う一品",
+        categories: [
+          {
+            id: "bag",
+            label: "バッグ",
+            hint: "トート、リュック、ショルダーなど",
+            mode: "dynamic", // "manual" or "dynamic"
+            manualUrls: ["", "", ""],
+            keywords: "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ",
+            tags: "",
+            minPrice: 0,
+            maxPrice: 150000,
+            sortBy: "price_desc"
+          },
+          {
+            id: "wallet",
+            label: "財布・革小物",
+            hint: "長財布、二つ折り、名刺入れなど",
+            mode: "dynamic",
+            manualUrls: ["", "", ""],
+            keywords: "財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー",
+            tags: "",
+            minPrice: 0,
+            maxPrice: 50000,
+            sortBy: "price_asc"
+          }
+        ]
+      },
+      {
+        id: "gift",
+        label: "ギフト（贈り物）",
+        hint: "大切な方へ感謝や記念の気持ちを込めて",
+        categories: [
+          {
+            id: "gift-all",
+            label: "ギフト全般・小物",
+            hint: "キーケース、名刺入れなど贈りやすいアイテム",
+            mode: "dynamic",
+            manualUrls: ["", "", ""],
+            keywords: "ギフト, プレゼント, キーケース, 名刺入れ, 財布",
+            tags: "gift",
+            minPrice: 0,
+            maxPrice: 30000,
+            sortBy: "tag_match"
+          }
+        ]
+      }
+    ]
+  };
 
+  const saved = JSON.parse(localStorage.getItem("concierge_config") || "null") || defaultData;
+
+  // フォームに基本値を反映
+  document.getElementById("brandName").value = saved.brandName || "";
+  document.getElementById("logoUrl").value = saved.logoUrl || "";
+  document.getElementById("logoFilter").value = saved.logoFilter || "none";
+  document.getElementById("tagline").value = saved.tagline || "";
+  document.getElementById("greeting").value = saved.greeting || "";
+  document.getElementById("mainColor").value = saved.mainColor || "#6e5340";
+  document.getElementById("shopifyDomain").value = saved.shopifyDomain || "";
+
+  let currentPurposes = saved.purposes || [];
+
+  // ツリー構造を描画する関数
+  function renderPurposes() {
+    const container = document.getElementById("purposesContainer");
+    container.innerHTML = "";
+
+    currentPurposes.forEach((purpose, pIndex) => {
+      const pDiv = document.createElement("div");
+      pDiv.className = "purpose-card";
+      pDiv.innerHTML = `
+        <div class="card-header">
+          <span>大本 ➔ 目的 #${pIndex + 1}</span>
+          <button class="btn-danger" type="button" onclick="removePurpose(${pIndex})">この目的を削除</button>
+        </div>
+        <div class="grid-2">
+          <label class="field">目的のラベル名（例: ご自身用）
+            <input type="text" class="p-label" value="${purpose.label}" data-index="${pIndex}">
+          </label>
+          <label class="field">目的の説明（サブテキスト）
+            <input type="text" class="p-hint" value="${purpose.hint || ''}" data-index="${pIndex}">
+          </label>
+        </div>
+        
+        <div style="margin-top: 16px; border-top: 1px dashed var(--color-line); padding-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong style="font-size: 13px; color: var(--color-accent);">└ 紐づくカテゴリ一覧</strong>
+            <button class="btn-secondary" type="button" onclick="addCategory(${pIndex})" style="padding: 6px 12px; font-size: 11px;">+ カテゴリを追加</button>
+          </div>
+          <div class="categories-container" data-purpose-index="${pIndex}"></div>
+        </div>
+      `;
+
+      const catContainer = pDiv.querySelector(".categories-container");
+      purpose.categories.forEach((cat, cIndex) => {
+        const cDiv = document.createElement("div");
+        cDiv.className = "category-card";
+        cDiv.innerHTML = `
+          <div class="card-header">
+            <span>階層 ➔ カテゴリ #${cIndex + 1}</span>
+            <button class="btn-danger" type="button" onclick="removeCategory(${pIndex}, ${cIndex})">カテゴリ削除</button>
+          </div>
+          <div class="grid-2">
+            <label class="field">カテゴリ名（例: バッグ、財布）
+              <input type="text" class="c-label" value="${cat.label}" data-p="${pIndex}" data-c="${cIndex}">
+            </label>
+            <label class="field">サブヒント説明
+              <input type="text" class="c-hint" value="${cat.hint || ''}" data-p="${pIndex}" data-c="${cIndex}">
+            </label>
+          </div>
+
+          <label class="field" style="margin-top: 10px;">提案モード（3商品の選出方法）
+            <select class="c-mode" data-p="${pIndex}" data-c="${cIndex}" onchange="toggleMode(this, ${pIndex}, ${cIndex})">
+              <option value="dynamic" ${cat.mode === 'dynamic' ? 'selected' : ''}>自動抽出（キーワード・Shopifyタグ・価格帯・ソートで上位3つを動的提案）</option>
+              <option value="manual" ${cat.mode === 'manual' ? 'selected' : ''}>固定指定（おすすめの3商品のURLを直接指定する）</option>
+            </select>
+          </label>
+
+          <div class="mode-box" id="mode-box-${pIndex}-${cIndex}">
+            ${cat.mode === 'manual' ? `
+              <label class="field">おすすめ商品 URL 1番目
+                <input type="url" class="c-url" value="${cat.manualUrls?.[0] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="0" placeholder="https://...">
+              </label>
+              <label class="field">おすすめ商品 URL 2番目
+                <input type="url" class="c-url" value="${cat.manualUrls?.[1] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="1" placeholder="https://...">
+              </label>
+              <label class="field">おすすめ商品 URL 3番目
+                <input type="url" class="c-url" value="${cat.manualUrls?.[2] || ''}" data-p="${pIndex}" data-c="${cIndex}" data-pos="2" placeholder="https://...">
+              </label>
+            ` : `
+              <label class="field">判定キーワード（タイトルに含まれる単語：カンマ区切り）
+                <input type="text" class="c-keywords" value="${cat.keywords || ''}" data-p="${pIndex}" data-c="${cIndex}">
+              </label>
+              <div class="grid-2">
+                <label class="field">Shopify必須タグ（任意：例 gift, pickup）
+                  <input type="text" class="c-tags" value="${cat.tags || ''}" data-p="${pIndex}" data-c="${cIndex}">
+                </label>
+                <label class="field">並び替え順（ソート）
+                  <select class="c-sort" data-p="${pIndex}" data-c="${cIndex}">
+                    <option value="price_asc" ${cat.sortBy === 'price_asc' ? 'selected' : ''}>価格が安い順</option>
+                    <option value="price_desc" ${cat.sortBy === 'price_desc' ? 'selected' : ''}>価格が高い順</option>
+                    <option value="tag_match" ${cat.sortBy === 'tag_match' ? 'selected' : ''}>タグ一致度優先</option>
+                  </select>
+                </label>
+              </div>
+              <div class="grid-2">
+                <label class="field">最低価格（円）
+                  <input type="text" class="c-min" value="${cat.minPrice ?? 0}" data-p="${pIndex}" data-c="${cIndex}">
+                </label>
+                <label class="field">最高価格（円）
+                  <input type="text" class="c-max" value="${cat.maxPrice ?? 200000}" data-p="${pIndex}" data-c="${cIndex}">
+                </label>
+              </div>
+            `}
+          </div>
+        `;
+        catContainer.appendChild(cDiv);
+      });
+
+      container.appendChild(pDiv);
+    });
+  }
+
+  // 入力内容をリアルタイムでオブジェクトに同期するイベントリスナー
+  document.addEventListener("input", (e) => {
+    const target = e.target;
+    const p = target.dataset.p;
+    const c = target.dataset.c;
+
+    if (target.classList.contains("p-label")) {
+      currentPurposes[target.dataset.index].label = target.value;
+    } else if (target.classList.contains("p-hint")) {
+      currentPurposes[target.dataset.index].hint = target.value;
+    } else if (target.classList.contains("c-label")) {
+      currentPurposes[p].categories[c].label = target.value;
+    } else if (target.classList.contains("c-hint")) {
+      currentPurposes[p].categories[c].hint = target.value;
+    } else if (target.classList.contains("c-keywords")) {
+      currentPurposes[p].categories[c].keywords = target.value;
+    } else if (target.classList.contains("c-tags")) {
+      currentPurposes[p].categories[c].tags = target.value;
+    } else if (target.classList.contains("c-min")) {
+      currentPurposes[p].categories[c].minPrice = parseInt(target.value) || 0;
+    } else if (target.classList.contains("c-max")) {
+      currentPurposes[p].categories[c].maxPrice = parseInt(target.value) || 200000;
+    } else if (target.classList.contains("c-url")) {
+      const pos = target.dataset.pos;
+      if (!currentPurposes[p].categories[c].manualUrls) currentPurposes[p].categories[c].manualUrls = ["", "", ""];
+      currentPurposes[p].categories[c].manualUrls[pos] = target.value;
+    }
+  });
+
+  document.addEventListener("change", (e) => {
+    const target = e.target;
+    const p = target.dataset.p;
+    const c = target.dataset.c;
+    if (target.classList.contains("c-sort")) {
+      currentPurposes[p].categories[c].sortBy = target.value;
+    }
+  });
+
+  window.toggleMode = function(selectEl, p, c) {
+    currentPurposes[p].categories[c].mode = selectEl.value;
+    if (!currentPurposes[p].categories[c].manualUrls) currentPurposes[p].categories[c].manualUrls = ["", "", ""];
+    renderPurposes();
+  };
+
+  window.addPurpose = function() {
+    currentPurposes.push({
+      id: "purpose_" + Date.now(),
+      label: "新しい目的",
+      hint: "目的の説明文を入力",
+      categories: [
+        {
+          id: "cat_" + Date.now(),
+          label: "カテゴリ名",
+          hint: "カテゴリの説明文",
+          mode: "dynamic",
+          manualUrls: ["", "", ""],
+          keywords: "財布, バッグ",
+          tags: "",
+          minPrice: 0,
+          maxPrice: 100000,
+          sortBy: "price_desc"
+        }
+      ]
+    });
+    renderPurposes();
+  };
+
+  window.removePurpose = function(pIndex) {
+    if (confirm("この目的と紐づくカテゴリ設定をすべて削除しますか？")) {
+      currentPurposes.splice(pIndex, 1);
+      renderPurposes();
+    }
+  };
+
+  window.addCategory = function(pIndex) {
+    currentPurposes[pIndex].categories.push({
+      id: "cat_" + Date.now(),
+      label: "新しいカテゴリ",
+      hint: "",
+      mode: "dynamic",
+      manualUrls: ["", "", ""],
+      keywords: "",
+      tags: "",
+      minPrice: 0,
+      maxPrice: 100000,
+      sortBy: "price_desc"
+    });
+    renderPurposes();
+  };
+
+  window.removeCategory = function(pIndex, cIndex) {
+    if (confirm("このカテゴリを削除しますか？")) {
+      currentPurposes[pIndex].categories.splice(cIndex, 1);
+      renderPurposes();
+    }
+  };
+
+  document.getElementById("addPurposeBtn").addEventListener("click", addPurpose);
+
+  // 保存ボタン処理
   document.getElementById("saveBtn").addEventListener("click", () => {
     const config = {
       brandName: document.getElementById("brandName").value,
@@ -121,16 +463,16 @@
       greeting: document.getElementById("greeting").value,
       mainColor: document.getElementById("mainColor").value,
       shopifyDomain: document.getElementById("shopifyDomain").value,
-      bagKeywords: document.getElementById("bagKeywords").value,
-      walletKeywords: document.getElementById("walletKeywords").value,
-      budgetLow: document.getElementById("budgetLow").value,
-      budgetMid: document.getElementById("budgetMid").value
+      purposes: currentPurposes
     };
     localStorage.setItem("concierge_config", JSON.stringify(config));
     const msg = document.getElementById("statusMsg");
-    msg.textContent = "設定を保存しました。";
-    setTimeout(() => { msg.textContent = ""; }, 3000);
+    msg.textContent = "設定をすべて保存しました！お客様画面（index.html）に反映されます。";
+    setTimeout(() => { msg.textContent = ""; }, 4000);
   });
+
+  // 初期描画
+  renderPurposes();
 </script>
 </body>
 </html>
