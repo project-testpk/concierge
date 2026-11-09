@@ -3,493 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<title id="pageTitle">コンシェルジュ</title>
+<title>コンシェルジュ 運用管理パネル</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --color-main: #6e5340;
-    --color-main-deep: #2c221b;
     --color-bg: #f9f8f6;
     --color-surface: #ffffff;
     --color-text: #2b2520;
-    --color-muted: #8c8278;
     --color-line: #eae4db;
-    --color-accent: #9e7d5d;
-    --color-user: #f3eee7;
     --radius: 12px;
-    --shadow: 0 10px 30px rgba(43, 37, 32, 0.03);
-    --font-serif: "Cormorant Garamond", "Times New Roman", serif;
-    --font-sans: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
   }
-
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
   body {
     margin: 0;
-    color: var(--color-text);
-    font-family: var(--font-sans);
+    padding: 40px 20px;
+    font-family: "Zen Kaku Gothic New", sans-serif;
     background: var(--color-bg);
-    letter-spacing: 0.04em;
-    -webkit-font-smoothing: antialiased;
+    color: var(--color-text);
   }
-
-  button, input { font-family: inherit; color: inherit; }
-  button { cursor: pointer; }
-
-  .app {
-    min-height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 24px 24px;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--color-line);
-    margin-bottom: 16px;
-  }
-  .eyebrow {
-    margin: 0 0 6px;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-    font-weight: 500;
-  }
-  
-  .brand-logo { max-height: 42px; width: auto; object-fit: contain; display: block; }
-  .filter-sepia { filter: sepia(100%) hue-rotate(320deg) saturate(60%) brightness(90%); }
-  .filter-dark { filter: brightness(40%) contrast(150%); }
-  .filter-monochrome { filter: grayscale(100%) contrast(120%); }
-
-  .brand {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-weight: 500;
-    font-size: clamp(26px, 3.5vw, 36px);
-    letter-spacing: 0.06em;
-    line-height: 1;
-  }
-  .btn-reset {
-    background: transparent;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    padding: 8px 16px;
-    font-size: 12px;
-    color: var(--color-muted);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-  }
-  .btn-reset svg { width: 13px; height: 13px; fill: currentColor; }
-  .btn-reset:hover { border-color: var(--color-accent); color: var(--color-text); }
-
-  .thread {
-    overflow-y: auto;
-    padding: 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .bubble {
-    max-width: min(560px, 100%);
-    padding: 18px 20px;
-    border-radius: var(--radius);
-    line-height: 1.8;
-    font-size: 14px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    box-shadow: var(--shadow);
-  }
-  .bubble.user {
-    align-self: flex-end;
-    background: var(--color-user);
-    border-color: transparent;
-    box-shadow: none;
-  }
-  .who {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--color-accent);
-    text-transform: uppercase;
-  }
-
-  .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
-  .choices:empty, .choices.hidden { display: none; }
-  .choice {
-    text-align: left;
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    box-shadow: var(--shadow);
-    transition: all 0.2s;
-  }
-  .choice:hover { border-color: var(--color-accent); transform: translateY(-1px); }
-  .choice strong { display: block; font-weight: 500; font-size: 14px; letter-spacing: 0.03em; }
-  .choice span { display: block; margin-top: 4px; color: var(--color-muted); font-size: 11px; line-height: 1.4; }
-
-  .products {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-top: 16px;
-  }
-  .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-  }
-  .card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    background: #f4f0eb;
-  }
-  .card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-  .card-cat { margin: 0; font-size: 9px; letter-spacing: 0.2em; color: var(--color-accent); text-transform: uppercase; }
-  .card h3 { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .price { margin: 0; font-size: 12px; font-weight: 500; color: var(--color-main); }
-  .product-link {
-    margin-top: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    text-decoration: none;
-    background: var(--color-main);
-    color: #fff;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    transition: opacity 0.2s;
-  }
-  .product-link svg { width: 11px; height: 11px; fill: currentColor; }
-  .product-link:hover { opacity: 0.9; }
-
-  .composer {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-    padding-top: 20px;
-    border-top: 1px solid var(--color-line);
-    margin-top: 16px;
-  }
-  .composer input {
-    border: 1px solid var(--color-line);
-    background: var(--color-surface);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .composer input:focus { border-color: var(--color-accent); }
-  .btn-submit {
-    background: var(--color-main);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 0 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  .btn-submit svg { width: 12px; height: 12px; fill: currentColor; }
-
-  .footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    color: var(--color-muted);
-  }
-
-  @media (max-width: 768px) {
-    .app { padding: 20px 16px; }
-    .choices, .products { grid-template-columns: 1fr; }
-  }
+  .wrap { max-width: 720px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: 0 10px 30px rgba(43, 37, 32, 0.03); }
+  h1 { margin-top: 0; font-size: 20px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; }
+  .section { margin-top: 28px; }
+  .section h2 { font-size: 14px; color: var(--color-main); margin-bottom: 14px; letter-spacing: 0.04em; }
+  .field { display: grid; gap: 8px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+  input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; box-sizing: border-box; outline: none; }
+  input[type="color"] { width: 60px; height: 40px; border: 1px solid var(--color-line); border-radius: 8px; padding: 2px; background: #faf8f5; cursor: pointer; }
+  .btn { background: var(--color-main); color: #fff; border: none; padding: 14px 24px; font-size: 14px; border-radius: var(--radius); cursor: pointer; font-weight: 500; letter-spacing: 0.06em; width: 100%; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.9; }
+  .note { font-size: 11px; color: #8c8278; line-height: 1.6; margin-top: 4px; }
 </style>
 </head>
 <body>
-  <div class="app">
-    <header class="header">
-      <div class="brand-block">
-        <p class="eyebrow" id="taglineLabel">革と対話するコンシェルジュ</p>
-        <div class="brand-row" id="brandContainer">
-          <h1 class="brand" id="brandNameLabel">DAYSART -Classic-</h1>
-        </div>
-      </div>
-      <button class="btn-reset" id="resetBtn" type="button">
-        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        最初から
-      </button>
-    </header>
+  <div class="wrap">
+    <h1>コンシェルジュ 運用管理パネル</h1>
+    <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面へ即時反映されます。</p>
 
-    <main class="thread" id="thread" aria-live="polite"></main>
-    <div class="choices" id="choices"></div>
+    <div class="section">
+      <h2>1. ブランド・基本設定</h2>
+      <label class="field">ブランド名
+        <input type="text" id="brandName" value="DAYSART -Classic-">
+      </label>
+      <label class="field">ブランドロゴ画像 URL (PNG等)
+        <input type="url" id="logoUrl" placeholder="https://...">
+      </label>
+      <label class="field">ロゴのカラーフィルター
+        <select id="logoFilter">
+          <option value="none">元の画像のまま（カラー無加工）</option>
+          <option value="sepia">セピア・アンティーク調に馴染ませる</option>
+          <option value="dark">シックなダークトーンにする</option>
+          <option value="monochrome">モノトーンにする</option>
+        </select>
+      </label>
+      <label class="field">キャッチコピー
+        <input type="text" id="tagline" value="革と対話するコンシェルジュ">
+      </label>
+      <label class="field">最初の挨拶メッセージ（目的を尋ねる言葉）
+        <input type="text" id="greeting" value="ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。">
+      </label>
+      <label class="field">メインカラー
+        <input type="color" id="mainColor" value="#6e5340">
+      </label>
+    </div>
 
-    <form class="composer" id="composer">
-      <input id="answer" type="text" placeholder="メッセージを入力..." autocomplete="off">
-      <button class="btn-submit" type="submit">
-        送信
-        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
-    </form>
+    <div class="section">
+      <h2>2. Shopify同期・キーワード設定</h2>
+      <label class="field">Shopify ストア URL
+        <input type="url" id="shopifyDomain" placeholder="https://daysart-classic.com">
+      </label>
+      <label class="field">カテゴリ判定キーワード（バッグ用：カンマ区切り）
+        <input type="text" id="bagKeywords" value="バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ">
+      </label>
+      <label class="field">カテゴリ判定キーワード（財布・小物用：カンマ区切り）
+        <input type="text" id="walletKeywords" value="財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー">
+      </label>
+    </div>
 
-    <footer class="footer">
-      <span id="footerBrand">DAYSART -Classic-</span>
-      <span>Secure Concierge Widget</span>
-    </footer>
+    <div class="section">
+      <h2>3. 予算（価格帯）設定</h2>
+      <label class="field">低価格帯の上限（円）
+        <input type="text" id="budgetLow" value="30000">
+      </label>
+      <label class="field">中価格帯の上限（円）
+        <input type="text" id="budgetMid" value="80000">
+      </label>
+    </div>
+
+    <button class="btn" id="saveBtn" type="button">設定を保存する</button>
+    <p id="statusMsg" style="margin-top: 12px; font-size: 12px; color: #4a7c59; text-align: center; font-weight: 500;"></p>
+
+    <div class="section" style="margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 20px;">
+      <a href="index.html" target="_blank" style="color: var(--color-main); font-weight: 500; text-decoration: none; font-size: 13px;">→ お客様用画面（index.html）を確認する</a>
+    </div>
   </div>
 
 <script>
-  const customConfig = JSON.parse(localStorage.getItem("concierge_config") || "{}");
-  
-  const config = {
-    brandName: customConfig.brandName || "DAYSART -Classic-",
-    logoUrl: customConfig.logoUrl || "",
-    logoFilter: customConfig.logoFilter || "none",
-    tagline: customConfig.tagline || "革と対話するコンシェルジュ",
-    greeting: customConfig.greeting || "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずは、お探しもののご用途を教えてください。",
-    mainColor: customConfig.mainColor || "#6e5340",
-    shopifyDomain: customConfig.shopifyDomain || "https://daysart-classic.com",
-    bagKeywords: customConfig.bagKeywords || "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ",
-    walletKeywords: customConfig.walletKeywords || "財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー",
-    budgetLow: parseInt(customConfig.budgetLow, 10) || 30000,
-    budgetMid: parseInt(customConfig.budgetMid, 10) || 80000
-  };
+  const saved = JSON.parse(localStorage.getItem("concierge_config") || "{}");
+  if (saved.brandName) document.getElementById("brandName").value = saved.brandName;
+  if (saved.logoUrl) document.getElementById("logoUrl").value = saved.logoUrl;
+  if (saved.logoFilter) document.getElementById("logoFilter").value = saved.logoFilter;
+  if (saved.tagline) document.getElementById("tagline").value = saved.tagline;
+  if (saved.greeting) document.getElementById("greeting").value = saved.greeting;
+  if (saved.mainColor) document.getElementById("mainColor").value = saved.mainColor;
+  if (saved.shopifyDomain) document.getElementById("shopifyDomain").value = saved.shopifyDomain;
+  if (saved.bagKeywords) document.getElementById("bagKeywords").value = saved.bagKeywords;
+  if (saved.walletKeywords) document.getElementById("walletKeywords").value = saved.walletKeywords;
+  if (saved.budgetLow) document.getElementById("budgetLow").value = saved.budgetLow;
+  if (saved.budgetMid) document.getElementById("budgetMid").value = saved.budgetMid;
 
-  const brandContainer = document.getElementById("brandContainer");
-  if (config.logoUrl) {
-    let filterClass = "";
-    if (config.logoFilter === "sepia") filterClass = "filter-sepia";
-    else if (config.logoFilter === "dark") filterClass = "filter-dark";
-    else if (config.logoFilter === "monochrome") filterClass = "filter-monochrome";
-
-    brandContainer.innerHTML = `<img src="${config.logoUrl}" alt="${config.brandName}" class="brand-logo ${filterClass}">`;
-  } else {
-    document.getElementById("brandNameLabel").textContent = config.brandName;
-  }
-
-  document.getElementById("pageTitle").textContent = config.brandName + " | コンシェルジュ";
-  document.getElementById("taglineLabel").textContent = config.tagline;
-  document.getElementById("footerBrand").textContent = config.brandName;
-  document.documentElement.style.setProperty("--color-main", config.mainColor);
-
-  let PRODUCTS = [];
-
-  // ステップ1: 目的（用途）のヒアリング用選択肢
-  const PURPOSES = [
-    { id: "self", label: "ご自身用（普段使い）", hint: "日々の暮らしやビジネスに寄り添う一品" },
-    { id: "gift", label: "ギフト（贈り物）", hint: "大切な方へ感謝や記念の気持ちを込めて" }
-  ];
-
-  const CATEGORIES = [
-    { id: "bag", label: "バッグ", hint: "トート、ブリーフ、ショルダー、ボディバッグ" },
-    { id: "wallet", label: "財布・小物", hint: "コンパクト財布、カードケース、キーケース" }
-  ];
-  const STYLES = [
-    { id: "classic", label: "クラシック", hint: "上品で、長く使う伝統デザイン" },
-    { id: "stylish", label: "スタイリッシュ", hint: "都会的で洗練されたデザイン" }
-  ];
-
-  const BUDGETS = [
-    { id: "under30", label: `〜${(config.budgetLow / 10000).toFixed(0)}万円`, hint: `税込 ${config.budgetLow.toLocaleString()}円まで`, max: config.budgetLow },
-    { id: "mid", label: `${(config.budgetLow / 10000).toFixed(0)}〜${(config.budgetMid / 10000).toFixed(0)}万円`, hint: `税込 ${(config.budgetLow + 1).toLocaleString()}〜${config.budgetMid.toLocaleString()}円`, min: config.budgetLow + 1, max: config.budgetMid },
-    { id: "high", label: `${(config.budgetMid / 10000).toFixed(0)}万円〜`, hint: `税込 ${(config.budgetMid + 1).toLocaleString()}円から`, min: config.budgetMid + 1 }
-  ];
-
-  const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((s) => [s.id, s.label]));
-
-  let messages = [{ role: "concierge", text: config.greeting }];
-  const state = { step: "purpose", purpose: null, category: null, style: null, budget: null };
-
-  async function syncShopifyProducts() {
-    if (!config.shopifyDomain) return;
-    try {
-      const url = config.shopifyDomain.replace(/\/$/, '') + '/products.json';
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.products && data.products.length > 0) {
-        const bagKeys = config.bagKeywords.split(',').map(k => k.trim().toLowerCase());
-        const walletKeys = config.walletKeywords.split(',').map(k => k.trim().toLowerCase());
-
-        PRODUCTS = data.products.map(p => {
-          const rawPrice = p.variants[0]?.price || "0";
-          const numericPrice = Math.round(parseFloat(rawPrice));
-          const titleLower = (p.title + " " + (p.tags || "")).toLowerCase();
-          
-          let category = "other";
-          if (bagKeys.some(k => titleLower.includes(k))) {
-            category = "bag";
-          } else if (walletKeys.some(k => titleLower.includes(k))) {
-            category = "wallet";
-          }
-          
-          return {
-            id: p.handle,
-            name: p.title,
-            category: category,
-            price: numericPrice,
-            url: `${config.shopifyDomain.replace(/\/$/, '')}/products/${p.handle}`,
-            image: p.images[0]?.src || ""
-          };
-        }).filter(p => p.category !== "other");
-      }
-    } catch (e) {
-      console.log("Shopify同期エラー", e);
-    }
-  }
-
-  function render() {
-    const thread = document.getElementById("thread");
-    thread.innerHTML = messages.map(m => `
-      <div class="bubble ${m.role}">
-        <span class="who">${m.role === 'concierge' ? config.brandName : 'あなた'}</span>
-        <div>${m.text}</div>
-        ${m.products && m.products.length > 0 ? `
-          <div class="products">
-            ${m.products.map(p => `
-              <div class="card">
-                <img src="${p.image}" alt="${p.name}">
-                <div class="card-body">
-                  <p class="card-cat">${CATEGORY_LABEL[p.category] || p.category}</p>
-                  <h3>${p.name}</h3>
-                  <p class="price">${p.price.toLocaleString()}円 税込</p>
-                  <a class="product-link" href="${p.url}" target="_blank">
-                    商品を見る
-                    <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-                  </a>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `).join('');
-    thread.scrollTop = thread.scrollHeight;
-
-    const opts = currentOptions();
-    const choicesEl = document.getElementById("choices");
-    if (opts.length > 0 && state.step !== "done") {
-      choicesEl.className = "choices";
-      choicesEl.innerHTML = opts.map(o => `
-        <button class="choice" type="button" data-id="${o.id}">
-          <strong>${o.label}</strong>
-          <span>${o.hint}</span>
-        </button>
-      `).join('');
-      document.querySelectorAll(".choice").forEach(btn => {
-        btn.addEventListener("click", () => handleSelect(btn.dataset.id));
-      });
-    } else {
-      choicesEl.innerHTML = "";
-      choicesEl.className = "choices hidden";
-    }
-  }
-
-  function currentOptions() {
-    if (state.step === "purpose") return PURPOSES;
-    if (state.step === "category") return CATEGORIES;
-    if (state.step === "style") return STYLES;
-    if (state.step === "budget") return BUDGETS;
-    return [];
-  }
-
-  function handleSelect(id) {
-    const opts = currentOptions();
-    const selected = opts.find(o => o.id === id);
-    if (!selected) return;
-
-    messages.push({ role: "user", text: selected.label });
-
-    if (state.step === "purpose") {
-      state.purpose = id;
-      state.step = "category";
-      const purposeText = id === "gift" ? "大切な方へのギフトですね。" : "ご自身用の普段使いですね。";
-      messages.push({ role: "concierge", text: purposeText + "それでは、ご覧になりたいアイテムのカテゴリーをお選びください。" });
-    } else if (state.step === "category") {
-      state.category = id;
-      state.step = "style";
-      messages.push({ role: "concierge", text: CATEGORY_LABEL[id] + "ですね。お好みのデザインをお選びください。" });
-    } else if (state.step === "style") {
-      state.style = id;
-      state.step = "budget";
-      messages.push({ role: "concierge", text: "ご予算の目安をお選びください。厳格に条件判定いたします。" });
-    } else if (state.step === "budget") {
-      state.budget = id;
-      state.step = "done";
-      
-      const budgetObj = BUDGETS.find(b => b.id === id);
-      const matched = PRODUCTS.filter(p => {
-        if (p.category !== state.category) return false;
-        if (budgetObj.min && p.price < budgetObj.min) return false;
-        if (budgetObj.max && p.price > budgetObj.max) return false;
-        return true;
-      }).slice(0, 3);
-
-      const count = matched.length;
-      messages.push({
-        role: "concierge",
-        text: count > 0 
-          ? `ご条件に合うおすすめの逸品を ${count} 点厳選いたしました。`
-          : `申し訳ありません。ご条件にぴったり合う商品が見つかりませんでした。別の条件でお試しください。`,
-        products: matched
-      });
-    }
-    render();
-  }
-
-  document.getElementById("composer").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const inputEl = document.getElementById("answer");
-    const val = inputEl.value.trim();
-    if (!val) return;
-    inputEl.value = "";
-
-    messages.push({ role: "user", text: val });
-    messages.push({ 
-      role: "concierge", 
-      text: "ご入力ありがとうございます。正確なご提案のため、上の選択肢からお選びいただくか、「最初から」ボタンよりやり直してください。" 
-    });
-    render();
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    const config = {
+      brandName: document.getElementById("brandName").value,
+      logoUrl: document.getElementById("logoUrl").value,
+      logoFilter: document.getElementById("logoFilter").value,
+      tagline: document.getElementById("tagline").value,
+      greeting: document.getElementById("greeting").value,
+      mainColor: document.getElementById("mainColor").value,
+      shopifyDomain: document.getElementById("shopifyDomain").value,
+      bagKeywords: document.getElementById("bagKeywords").value,
+      walletKeywords: document.getElementById("walletKeywords").value,
+      budgetLow: document.getElementById("budgetLow").value,
+      budgetMid: document.getElementById("budgetMid").value
+    };
+    localStorage.setItem("concierge_config", JSON.stringify(config));
+    const msg = document.getElementById("statusMsg");
+    msg.textContent = "設定を保存しました。";
+    setTimeout(() => { msg.textContent = ""; }, 3000);
   });
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    state.step = "purpose";
-    state.purpose = null;
-    state.category = null;
-    state.style = null;
-    state.budget = null;
-    messages = [{ role: "concierge", text: config.greeting }];
-    render();
-  });
-
-  async function init() {
-    await syncShopifyProducts();
-    render();
-  }
-  init();
 </script>
 </body>
 </html>
