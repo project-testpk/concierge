@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コンシェルジュ管理・設定パネル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-main: #6e5340;
+    --color-bg: #f3eee7;
+    --color-surface: #fbf8f4;
+    --color-text: #2b241f;
+    --color-line: #e4d7c8;
+    --radius: 12px;
+  }
+  body {
+    margin: 0;
+    padding: 30px 20px;
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  .wrap { max-width: 720px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+  h1 { margin-top: 0; font-size: 24px; border-bottom: 2px solid var(--color-line); padding-bottom: 12px; }
+  .section { margin-top: 24px; }
+  .section h2 { font-size: 16px; color: var(--color-main); margin-bottom: 10px; }
+  .field { display: grid; gap: 6px; margin-bottom: 14px; font-size: 13px; }
+  input[type="text"], input[type="url"] { width: 100%; padding: 10px; border: 1px solid var(--color-line); border-radius: 8px; background: #fff; font-size: 14px; }
+  input[type="color"] { width: 80px; height: 38px; border: 1px solid var(--color-line); border-radius: 8px; padding: 2px; }
+  .btn { background: var(--color-main); color: #fff; border: none; padding: 12px 20px; font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: 500; margin-top: 10px; }
+  .btn:hover { opacity: 0.9; }
+  .note { font-size: 12px; color: #75685c; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>コンシェルジュ 運用管理パネル</h1>
+    <p class="note">ここで設定したブランド情報やShopify連携設定はブラウザ（localStorage）に保存され、お客様用画面に即時反映されます。</p>
+
+    <div class="section">
+      <h2>1. ブランド・基本設定</h2>
+      <label class="field">ブランド名
+        <input type="text" id="brandName" value="ATELIER CUIR">
+      </label>
+      <label class="field">キャッチコピー
+        <input type="text" id="tagline" value="革と対話するコンシェルジュ">
+      </label>
+      <label class="field">最初の挨拶メッセージ
+        <input type="text" id="greeting" value="ようこそ。革の表情から、今日の一品を一緒に見つけましょう。">
+      </label>
+      <label class="field">メインカラー
+        <input type="color" id="mainColor" value="#6e5340">
+      </label>
+    </div>
+
+    <div class="section">
+      <h2>2. Shopify / 外部API 同期設定</h2>
+      <label class="field">Shopify ストア URL (例: https://your-shop.myshopify.com)
+        <input type="url" id="shopifyDomain" placeholder="https://...">
+      </label>
+      <label class="field">Storefront API アクセストークン (公開用)
+        <input type="text" id="shopifyToken" placeholder="APIトークンを入力">
+      </label>
+      <p class="note">※設定すると、Shopifyの公開APIから最新の商品データを自動同期します（未入力の場合は内蔵の標準データを使用します）。</p>
+    </div>
+
+    <button class="btn" id="saveBtn" type="button">設定を保存する</button>
+    <p id="statusMsg" style="margin-top: 10px; font-size: 13px; color: green;"></p>
+
+    <div class="section" style="margin-top: 40px; border-top: 1px solid var(--color-line); padding-top: 20px;">
+      <h2>プレビュー</h2>
+      <a href="index.html" target="_blank" style="color: var(--color-main); font-weight: bold; text-decoration: none;">→ お客様用画面（index.html）を確認する</a>
+    </div>
+  </div>
+
+<script>
+  // 保存されている設定の読み込み
+  const saved = JSON.parse(localStorage.getItem("concierge_config") || "{}");
+  if (saved.brandName) document.getElementById("brandName").value = saved.brandName;
+  if (saved.tagline) document.getElementById("tagline").value = saved.tagline;
+  if (saved.greeting) document.getElementById("greeting").value = saved.greeting;
+  if (saved.mainColor) document.getElementById("mainColor").value = saved.mainColor;
+  if (saved.shopifyDomain) document.getElementById("shopifyDomain").value = saved.shopifyDomain;
+  if (saved.shopifyToken) document.getElementById("shopifyToken").value = saved.shopifyToken;
+
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    const config = {
+      brandName: document.getElementById("brandName").value,
+      tagline: document.getElementById("tagline").value,
+      greeting: document.getElementById("greeting").value,
+      mainColor: document.getElementById("mainColor").value,
+      shopifyDomain: document.getElementById("shopifyDomain").value,
+      shopifyToken: document.getElementById("shopifyToken").value
+    };
+    localStorage.setItem("concierge_config", JSON.stringify(config));
+    const msg = document.getElementById("statusMsg");
+    msg.textContent = "設定を保存しました！お客様画面に反映されます。";
+    setTimeout(() => { msg.textContent = ""; }, 3000);
+  });
+</script>
+</body>
+</html>

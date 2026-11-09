@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>ATELIER CUIR | コンシェルジュ</title>
+<title id="pageTitle">コンシェルジュ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@
   .app {
     min-height: 100dvh;
     display: grid;
-    grid-template-rows: auto auto 1fr auto auto;
+    grid-template-rows: auto 1fr auto auto auto;
     max-width: 1080px;
     margin: 0 auto;
     padding: 20px 20px 12px;
@@ -126,40 +126,6 @@
     border-color: var(--color-main);
   }
   .ghost:hover, .solid:hover, .mic:hover, .send:hover { transform: translateY(-1px); }
-
-  .tuner {
-    display: none;
-    margin-top: 12px;
-    padding: 14px;
-    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-  .tuner.open { display: grid; gap: 12px; }
-  .tuner-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1.4fr 0.7fr 0.7fr 0.8fr;
-    gap: 10px;
-  }
-  .field { display: grid; gap: 6px; font-size: 12px; color: var(--color-muted); }
-  .field input[type="text"] {
-    width: 100%;
-    border: 1px solid var(--color-line);
-    background: var(--color-bg);
-    border-radius: 10px;
-    padding: 8px 10px;
-  }
-  .field input[type="color"] {
-    width: 100%;
-    height: 38px;
-    padding: 4px;
-    border: 1px solid var(--color-line);
-    background: var(--color-bg);
-    border-radius: 10px;
-  }
-  .field input[type="range"] { width: 100%; accent-color: var(--color-main); }
-  .tuner-note { margin: 0; font-size: 12px; color: var(--color-muted); }
 
   .thread {
     overflow: auto;
@@ -301,39 +267,16 @@
   }
   .footer strong { color: var(--color-main-deep); font-weight: 500; }
 
-  dialog {
-    width: min(560px, calc(100% - 28px));
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    padding: 0;
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow);
-  }
-  dialog::backdrop { background: rgba(43, 36, 31, 0.46); }
-  .detail img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--color-chip); }
-  .detail-body { padding: 16px 18px 18px; }
-  .detail-body h3 { margin: 6px 0; font-family: var(--font-serif); font-size: 34px; font-weight: 500; }
-  .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-  .link-note { font-size: 12px; color: var(--color-muted); word-break: break-all; }
-
   @media (max-width: 800px) {
     .app { padding: 14px 12px 8px; }
     .header { flex-direction: column; align-items: stretch; }
     .header-actions { justify-content: flex-start; }
-    .tuner-grid, .choices, .choices.four, .products, .composer {
+    .choices, .choices.four, .products, .composer {
       grid-template-columns: 1fr;
     }
     .composer { grid-template-columns: 1fr 1fr; }
     .composer input { grid-column: 1 / -1; }
     .card h3 { font-size: 22px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation: none !important;
-      transition: none !important;
-      scroll-behavior: auto !important;
-    }
   }
 </style>
 </head>
@@ -341,40 +284,17 @@
   <div class="app">
     <header class="header">
       <div class="brand-block">
-        <p class="eyebrow" id="tagline">革と対話するコンシェルジュ</p>
+        <p class="eyebrow" id="taglineLabel">革と対話するコンシェルジュ</p>
         <div class="brand-row">
-          <h1 class="brand" id="brandName">ATELIER CUIR</h1>
+          <h1 class="brand" id="brandNameLabel">ATELIER CUIR</h1>
           <span class="speak-dot" id="speakDot" aria-hidden="true"></span>
         </div>
       </div>
       <div class="header-actions">
         <button class="ghost" id="voiceToggle" type="button" aria-pressed="true">音声ガイド: ON</button>
-        <button class="ghost" id="themeBtn" type="button">テーマを切替</button>
-        <button class="ghost" id="tuneBtn" type="button" aria-expanded="false">表示を調整</button>
         <button class="solid" id="resetBtn" type="button">最初からやり直す</button>
       </div>
     </header>
-
-    <section class="tuner" id="tuner" aria-label="ブランド設定">
-      <div class="tuner-grid">
-        <label class="field">ブランド名
-          <input id="tuneBrand" type="text" autocomplete="off">
-        </label>
-        <label class="field">挨拶文
-          <input id="tuneGreeting" type="text" autocomplete="off">
-        </label>
-        <label class="field">メインカラー
-          <input id="tuneMain" type="color">
-        </label>
-        <label class="field">背景色
-          <input id="tuneBg" type="color">
-        </label>
-        <label class="field">角丸 <span id="radiusLabel"></span>
-          <input id="tuneRadius" type="range" min="0" max="32" step="1">
-        </label>
-      </div>
-      <p class="tuner-note">このパネルは画面内の設定オブジェクトをその場で書き換え、CSS変数へ反映します。サイトごとに変える場合はスクリプトの BRAND_PRESETS を編集するか、<code>?config=brand.json</code> で同じ形のJSONを読み込めます。</p>
-    </section>
 
     <main class="thread" id="thread" aria-live="polite"></main>
     <div class="choices" id="choices"></div>
@@ -392,645 +312,203 @@
     </footer>
   </div>
 
-  <dialog id="detail" class="detail">
-    <img id="detailImg" alt="">
-    <div class="detail-body">
-      <p class="card-cat" id="detailCat"></p>
-      <h3 id="detailName"></h3>
-      <p id="detailPrice" class="price"></p>
-      <p id="detailCopy"></p>
-      <ul class="tags" id="detailTags"></ul>
-      <p class="link-note" id="detailUrl"></p>
-      <div class="detail-actions">
-        <a class="product-link" id="detailLink" href="#" target="_blank" rel="noopener noreferrer">商品ページへ</a>
-        <button class="ghost" id="detailClose" type="button">閉じる</button>
-      </div>
-    </div>
-  </dialog>
-
 <script>
-/**
- * サイトごとの見た目と文言は、この設定オブジェクトが源です。
- * BRAND_PRESETS を差し替えるか、?config=your.json で同形式のJSONを読むと即座に切り替わります。
- * theme のキーは CSS カスタムプロパティです。
- */
-const BRAND_PRESETS = [
-  {
-    id: "atelier",
-    brandName: "ATELIER CUIR",
-    tagline: "革と対話するコンシェルジュ",
-    greeting: "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずはご覧になりたいものをお選びください。",
-    appearance: "light",
-    theme: {
-      "--color-main": "#6e5340",
-      "--color-main-deep": "#3f2e24",
-      "--color-bg": "#f3eee7",
-      "--color-surface": "#fbf8f4",
-      "--color-text": "#2b241f",
-      "--color-muted": "#75685c",
-      "--color-line": "#e4d7c8",
-      "--color-accent": "#8d6a45",
-      "--color-chip": "#f3e7d8",
-      "--color-on-main": "#fbf8f4",
-      "--color-user": "#efe4d6",
-      "--radius": "18px",
-      "--shadow": "0 18px 40px rgba(63, 46, 36, 0.08)"
-    }
-  },
-  {
-    id: "nocturne",
-    brandName: "MAISON NOCTURNE",
-    tagline: "夜のアトリエで選ぶ革",
-    greeting: "こんばんは。深い色の革から、落ち着いた一品をお探しします。まずは種類をお聞かせください。",
-    appearance: "dark",
-    theme: {
-      "--color-main": "#c6a36a",
-      "--color-main-deep": "#f3eadf",
-      "--color-bg": "#241c18",
-      "--color-surface": "#312720",
-      "--color-text": "#f6f0e8",
-      "--color-muted": "#cbbba8",
-      "--color-line": "#4a3c32",
-      "--color-accent": "#d7b98a",
-      "--color-chip": "#3d3128",
-      "--color-on-main": "#241c18",
-      "--color-user": "#43362c",
-      "--radius": "8px",
-      "--shadow": "0 16px 36px rgba(0, 0, 0, 0.28)"
-    }
-  },
-  {
-    id: "sable",
-    brandName: "SABLE LINEN",
-    tagline: "麻色の光と、やわらかな革",
-    greeting: "いらっしゃいませ。日常に寄り添う革小物を、一緒に絞り込みましょう。まずは気になる棚をお選びください。",
-    appearance: "light",
-    theme: {
-      "--color-main": "#6d5b45",
-      "--color-main-deep": "#3d3428",
-      "--color-bg": "#f7f3ec",
-      "--color-surface": "#fffdf9",
-      "--color-text": "#2f291f",
-      "--color-muted": "#7d7364",
-      "--color-line": "#e7dfd2",
-      "--color-accent": "#8a7a55",
-      "--color-chip": "#f3ecdf",
-      "--color-on-main": "#fffdf9",
-      "--color-user": "#f0e6d4",
-      "--radius": "28px",
-      "--shadow": "0 14px 34px rgba(90, 74, 48, 0.08)"
+  // ローカルストレージまたはデフォルト設定の読み込み
+  const customConfig = JSON.parse(localStorage.getItem("concierge_config") || "{}");
+  
+  const config = {
+    brandName: customConfig.brandName || "ATELIER CUIR",
+    tagline: customConfig.tagline || "革と対話するコンシェルジュ",
+    greeting: customConfig.greeting || "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。まずはご覧になりたいものをお選びください。",
+    mainColor: customConfig.mainColor || "#6e5340",
+    shopifyDomain: customConfig.shopifyDomain || "",
+    shopifyToken: customConfig.shopifyToken || ""
+  };
+
+  // 画面への適用
+  document.getElementById("pageTitle").textContent = config.brandName + " | コンシェルジュ";
+  document.getElementById("brandNameLabel").textContent = config.brandName;
+  document.getElementById("taglineLabel").textContent = config.tagline;
+  document.getElementById("footerBrand").textContent = config.brandName;
+  document.documentElement.style.setProperty("--color-main", config.mainColor);
+
+  // 標準商品データ（Shopify未連携時のフォールバック）
+  let PRODUCTS = [
+    { id: "heritage-tote", name: "ヘリテージ トート", category: "bag", styles: ["classic"], price: 78000, url: "#", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=80", copy: "型崩れしにくいコバと、年月で艶の増す植物タンニンなめし。" },
+    { id: "compact-hand", name: "コンパクト ハンド", category: "bag", styles: ["classic"], price: 24800, url: "#", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80", copy: "式典から日常まで持てる、小さなクラシック。" },
+    { id: "nocturne-long", name: "長札入れ ノクターン", category: "wallet", styles: ["classic"], price: 36000, url: "#", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=900&q=80", copy: "札が落ち着くまで待つ、やや深めのマチ。" },
+    { id: "sharp-card", name: "シャープ カードケース", category: "wallet", styles: ["stylish"], price: 16800, url: "#", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=900&q=80", copy: "カードが扇状に開く、薄いケース。" },
+    { id: "daily-coin", name: "デイリー コインケース", category: "wallet", styles: ["casual"], price: 12000, url: "#", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=700&q=60", copy: "片手で開く口金。小さな贈り物に向きます。" }
+  ];
+
+  const CATEGORIES = [
+    { id: "bag", label: "バッグ", hint: "トート、ショルダー、ブリーフ" },
+    { id: "wallet", label: "財布・小物", hint: "財布、カード、キーケース" },
+    { id: "gift", label: "ギフト", hint: "包装とギフト向けの一品" }
+  ];
+  const STYLES = [
+    { id: "classic", label: "クラシック", hint: "上品で、長く使う" },
+    { id: "stylish", label: "スタイリッシュ", hint: "都会的でシャープ" },
+    { id: "casual", label: "カジュアル", hint: "日常にやわらかく" },
+    { id: "minimal", label: "ミニマル", hint: "線の少ない佇まい" }
+  ];
+  const BUDGETS = [
+    { id: "under30", label: "〜3万円", hint: "税込 30,000円まで", max: 30000 },
+    { id: "mid", label: "3〜8万円", hint: "税込 30,001〜80,000円", min: 30001, max: 80000 },
+    { id: "high", label: "8万円〜", hint: "税込 80,001円から", min: 80001 }
+  ];
+
+  const STYLE_LABEL = Object.fromEntries(STYLES.map((s) => [s.id, s.label]));
+  const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((s) => [s.id, s.label]));
+
+  let messages = [{ role: "concierge", text: config.greeting }];
+  const state = { step: "category", category: null, style: null, budget: null, voice: true };
+
+  // Shopify API連携の自動同期処理（設定がある場合）
+  async function syncShopifyProducts() {
+    if (!config.shopifyDomain) return;
+    try {
+      // Shopify公開JSONエンドポイントからの取得例
+      const res = await fetch(`${config.shopifyDomain}/products.json`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.products && data.products.length > 0) {
+        PRODUCTS = data.products.map(p => ({
+          id: p.handle,
+          name: p.title,
+          category: "bag", // 必要に応じてタグ等で振り分け
+          styles: ["classic"],
+          price: parseInt(p.variants[0]?.price || 0, 10),
+          url: `${config.shopifyDomain}/products/${p.handle}`,
+          image: p.images[0]?.src || "",
+          copy: p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '').substring(0, 50) + "..." : ""
+        }));
+      }
+    } catch (e) {
+      console.log("Shopify同期スキップ（標準データを使用します）", e);
     }
   }
-];
 
-/** 商品マスタ。url をECの商品URLに差し替えると「商品ページへ」が外部へ開きます。 */
-const PRODUCTS = [
-  { id: "heritage-tote", name: "ヘリテージ トート", category: "bag", styles: ["classic"], price: 78000, gift: false, url: "#heritage-tote", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=80", copy: "型崩れしにくいコバと、年月で艶の増す植物タンニンなめし。" },
-  { id: "atelier-tote", name: "アトリエ トート", category: "bag", styles: ["classic"], price: 128000, gift: true, url: "#atelier-tote", image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=80", copy: "ギフト包装に耐える存在感。金具は経年で落ち着きます。" },
-  { id: "compact-hand", name: "コンパクト ハンド", category: "bag", styles: ["classic"], price: 24800, gift: true, url: "#compact-hand", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80", copy: "式典から日常まで持てる、小さなクラシック。" },
-  { id: "opera-brief", name: "オペラ ブリーフ", category: "bag", styles: ["stylish"], price: 96000, gift: false, url: "#opera-brief", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=80", copy: "書類が折れない開口と、細いシルエット。" },
-  { id: "metro-shoulder", name: "メトロ ショルダー", category: "bag", styles: ["stylish"], price: 64000, gift: false, url: "#metro-shoulder", image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=900&q=80", copy: "肩に沿う幅。都市の移動を想定した金具配置です。" },
-  { id: "city-cross", name: "シティ クロスボディ", category: "bag", styles: ["stylish"], price: 28000, gift: true, url: "#city-cross", image: "https://images.unsplash.com/photo-1575032617751-6ddec2089882?auto=format&fit=crop&w=900&q=80", copy: "両手の空く細身の一本。初めての革バッグにも。" },
-  { id: "sunday-shoulder", name: "サンデー ショルダー", category: "bag", styles: ["casual"], price: 42000, gift: false, url: "#sunday-shoulder", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=70", copy: "柔らかいシュリンク。休日の荷物が自然に収まります。" },
-  { id: "market-tote", name: "マーケット トート", category: "bag", styles: ["casual"], price: 21000, gift: true, url: "#market-tote", image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=70", copy: "買い物と散歩を一つにする、軽めの一枚革。" },
-  { id: "travel-duffle", name: "トラベル ダッフル", category: "bag", styles: ["casual"], price: 88000, gift: false, url: "#travel-duffle", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=70", copy: "二泊までの荷物を、型を崩さず運ぶダッフル。" },
-  { id: "line-bucket", name: "ライン バケット", category: "bag", styles: ["minimal"], price: 54000, gift: false, url: "#line-bucket", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=70", copy: "縫いを減らし、革の面で見せるバケット。" },
-  { id: "arc-mini", name: "アーク ミニ", category: "bag", styles: ["minimal"], price: 19800, gift: true, url: "#arc-mini", image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=70", copy: "カードと鍵だけを入れる、弧を描いたミニ。" },
-  { id: "frame-clutch", name: "フレーム クラッチ", category: "bag", styles: ["minimal"], price: 86000, gift: true, url: "#frame-clutch", image: "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?auto=format&fit=crop&w=900&q=80", copy: "金具一本で開閉する、贈答向きのクラッチ。" },
-  { id: "nocturne-long", name: "長札入れ ノクターン", category: "wallet", styles: ["classic"], price: 36000, gift: true, url: "#nocturne-long", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=900&q=80", copy: "札が落ち着くまで待つ、やや深めのマチ。" },
-  { id: "signature-long", name: "シグネチャ 束入れ", category: "wallet", styles: ["classic"], price: 84000, gift: true, url: "#signature-long", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=70", copy: "縁のステッチを手で揃えた、礼装にも使える束入れ。" },
-  { id: "compact-bill", name: "コンパクト 札入れ", category: "wallet", styles: ["classic"], price: 19800, gift: false, url: "#compact-bill", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=700&q=60", copy: "必要枚数だけの札入れ。箱に入れて渡せます。" },
-  { id: "sharp-card", name: "シャープ カードケース", category: "wallet", styles: ["stylish"], price: 16800, gift: true, url: "#sharp-card", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=900&q=80", copy: "カードが扇状に開く、薄いケース。" },
-  { id: "folio-pro", name: "フォリオ 長財布", category: "wallet", styles: ["stylish"], price: 52000, gift: false, url: "#folio-pro", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=800&q=70", copy: "スマホと札を分けて持つ、縦長のフォリオ。" },
-  { id: "metal-case", name: "メタルエッジ ケース", category: "wallet", styles: ["stylish"], price: 82000, gift: true, url: "#metal-case", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=640&q=80", copy: "真鍮の縁が指に残る、少量生産のカードケース。" },
-  { id: "soft-bifold", name: "ソフト 二つ折り", category: "wallet", styles: ["casual"], price: 24000, gift: false, url: "#soft-bifold", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=760&q=70", copy: "ポケットで角が丸くなるのを前提にした柔らかさ。" },
-  { id: "daily-coin", name: "デイリー コインケース", category: "wallet", styles: ["casual"], price: 12000, gift: true, url: "#daily-coin", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=700&q=60", copy: "片手で開く口金。小さな贈り物に向きます。" },
-  { id: "travel-organizer", name: "トラベル オーガナイザー", category: "wallet", styles: ["casual"], price: 38000, gift: false, url: "#travel-organizer", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=680&q=70", copy: "切符とカードを旅の順に並べる中仕切り。" },
-  { id: "line-clip", name: "ライン マネークリップ", category: "wallet", styles: ["minimal"], price: 22000, gift: false, url: "#line-clip", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=760&q=70", copy: "札の枚数が少ない人のための、一本のクリップ。" },
-  { id: "thin-pass", name: "シン パスケース", category: "wallet", styles: ["minimal"], price: 9800, gift: true, url: "#thin-pass", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=620&q=70", copy: "定期とカード二枚。それ以上は入れない設計です。" },
-  { id: "slim-long", name: "スリム 長札", category: "wallet", styles: ["minimal"], price: 45000, gift: false, url: "#slim-long", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=640&q=80", copy: "マチをなくし、ジャケットの内ポケットに収まる厚み。" },
-  { id: "pair-key", name: "ペア キーケース", category: "gift", styles: ["stylish"], price: 26000, gift: true, url: "#pair-key", image: "https://images.unsplash.com/photo-1473188588951-666fce8e7c68?auto=format&fit=crop&w=900&q=80", copy: "同じ型を二つ。箱の中で金具が鳴らない仕切り付き。" },
-  { id: "journal-cover", name: "手帳カバー ギフト", category: "gift", styles: ["stylish"], price: 42000, gift: true, url: "#journal-cover", image: "https://images.unsplash.com/photo-1473188588951-666fce8e7c68?auto=format&fit=crop&w=800&q=70", copy: "文庫からA6まで。宛名カードを挟むポケット付き。" },
-  { id: "watch-roll", name: "ウォッチロール", category: "gift", styles: ["stylish"], price: 92000, gift: true, url: "#watch-roll", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=900&q=80", copy: "二本を傷から守る、旅行用の革ロール。" },
-  { id: "grand-tote", name: "グラン トート（ギフト包装）", category: "gift", styles: ["classic"], price: 88000, gift: true, url: "#grand-tote", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=860&q=80", copy: "リボンとカードをセットにした、改まった贈り物。" },
-  { id: "initial-pass", name: "イニシャル パスケース", category: "gift", styles: ["minimal"], price: 16000, gift: true, url: "#initial-pass", image: "https://images.unsplash.com/photo-1612902456551-333ac5afa26e?auto=format&fit=crop&w=820&q=70", copy: "ホットスタンプの頭文字。箱に入れてその日に渡せます。" },
-  { id: "gift-bucket", name: "ギフト バケット", category: "gift", styles: ["minimal"], price: 48000, gift: true, url: "#gift-bucket", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=760&q=70", copy: "中身を選ばない形。ラッピング済みでお届けします。" },
-  { id: "pouch-set", name: "デイリー ポーチ セット", category: "gift", styles: ["casual"], price: 19800, gift: true, url: "#pouch-set", image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=760&q=70", copy: "大小二つのポーチ。普段使いの贈答に。" },
-  { id: "gift-tote-casual", name: "サンデー ギフトトート", category: "gift", styles: ["casual"], price: 46000, gift: true, url: "#gift-tote-casual", image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=760&q=70", copy: "カジュアルな相手へ。メッセージカードが付きます。" },
-  { id: "weekender-gift", name: "ウィークエンダー", category: "gift", styles: ["casual"], price: 98000, gift: true, url: "#weekender-gift", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=760&q=60", copy: "週末の荷物を一つにまとめる、贈答仕様の大型。" }
-];
-
-const CATEGORIES = [
-  { id: "bag", label: "バッグ", hint: "トート、ショルダー、ブリーフ" },
-  { id: "wallet", label: "財布・小物", hint: "財布、カード、キーケース" },
-  { id: "gift", label: "ギフト", hint: "包装とカードに合う一品" }
-];
-const STYLES = [
-  { id: "classic", label: "クラシック", hint: "上品で、長く使う" },
-  { id: "stylish", label: "スタイリッシュ", hint: "都会的でシャープ" },
-  { id: "casual", label: "カジュアル", hint: "日常にやわらかく" },
-  { id: "minimal", label: "ミニマル", hint: "線の少ない佇まい" }
-];
-const BUDGETS = [
-  { id: "under30", label: "〜3万円", hint: "税込 30,000円まで" },
-  { id: "mid", label: "3〜8万円", hint: "税込 30,001〜80,000円" },
-  { id: "high", label: "8万円〜", hint: "税込 80,001円から" }
-];
-const STYLE_LABEL = Object.fromEntries(STYLES.map((s) => [s.id, s.label]));
-const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((s) => [s.id, s.label]));
-
-const els = {
-  thread: document.getElementById("thread"),
-  choices: document.getElementById("choices"),
-  voiceToggle: document.getElementById("voiceToggle"),
-  themeBtn: document.getElementById("themeBtn"),
-  tuneBtn: document.getElementById("tuneBtn"),
-  tuner: document.getElementById("tuner"),
-  resetBtn: document.getElementById("resetBtn"),
-  composer: document.getElementById("composer"),
-  answer: document.getElementById("answer"),
-  micBtn: document.getElementById("micBtn"),
-  hint: document.getElementById("hint"),
-  brandName: document.getElementById("brandName"),
-  tagline: document.getElementById("tagline"),
-  footerBrand: document.getElementById("footerBrand"),
-  tuneBrand: document.getElementById("tuneBrand"),
-  tuneGreeting: document.getElementById("tuneGreeting"),
-  tuneMain: document.getElementById("tuneMain"),
-  tuneBg: document.getElementById("tuneBg"),
-  tuneRadius: document.getElementById("tuneRadius"),
-  radiusLabel: document.getElementById("radiusLabel"),
-  detail: document.getElementById("detail"),
-  detailImg: document.getElementById("detailImg"),
-  detailCat: document.getElementById("detailCat"),
-  detailName: document.getElementById("detailName"),
-  detailPrice: document.getElementById("detailPrice"),
-  detailCopy: document.getElementById("detailCopy"),
-  detailTags: document.getElementById("detailTags"),
-  detailUrl: document.getElementById("detailUrl"),
-  detailLink: document.getElementById("detailLink"),
-  detailClose: document.getElementById("detailClose")
-};
-
-let config = clone(BRAND_PRESETS[0]);
-let presetIndex = 0;
-let messages = [];
-const state = {
-  step: "category",
-  category: null,
-  style: null,
-  budget: null,
-  voice: true,
-  listening: false
-};
-
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (ch) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[ch]));
-}
-function yen(price) {
-  return "¥" + price.toLocaleString("ja-JP");
-}
-function placeholder(name) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">
-    <rect width="800" height="600" fill="#e7d7c4"/>
-    <rect x="70" y="80" width="660" height="440" rx="28" fill="none" stroke="#6e5340" stroke-width="3"/>
-    <text x="400" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="36" fill="#3f2e24">${name}</text>
-  </svg>`;
-  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
-}
-function findProduct(id) {
-  return PRODUCTS.find((item) => item.id === id);
-}
-
-function applyConfig(next, options) {
-  config = clone(next);
-  const root = document.documentElement;
-  Object.entries(config.theme).forEach(([key, value]) => root.style.setProperty(key, value));
-  root.dataset.theme = config.appearance || "light";
-  document.querySelector('meta[name="color-scheme"]').content = config.appearance === "dark" ? "dark" : "light";
-  els.brandName.textContent = config.brandName;
-  els.tagline.textContent = config.tagline;
-  els.footerBrand.textContent = config.brandName;
-  setControl(els.tuneBrand, config.brandName);
-  setControl(els.tuneGreeting, config.greeting);
-  setControl(els.tuneMain, toHex(config.theme["--color-main"]));
-  setControl(els.tuneBg, toHex(config.theme["--color-bg"]));
-  document.title = config.brandName + " | コンシェルジュ";
-  const radius = parseInt(config.theme["--radius"], 10) || 0;
-  els.tuneRadius.value = String(radius);
-  els.radiusLabel.textContent = radius + "px";
-  if (options && options.refreshGreeting && isOpening()) {
-    messages = [{ role: "concierge", text: config.greeting }];
-    if (options.speak) speak(config.greeting);
-  }
-  render();
-}
-function setControl(element, value) {
-  if (element.value !== value) element.value = value;
-}
-function toHex(color) {
-  const raw = String(color).trim();
-  if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw.toLowerCase();
-  return "#6e5340";
-}
-function isOpening() {
-  return state.step === "category" && messages.every((message) => message.role === "concierge");
-}
-
-let voicesReady = false;
-function pickVoice() {
-  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-  return voices.find((voice) => voice.lang === "ja-JP")
-    || voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("ja"))
-    || null;
-}
-function speak(text) {
-  if (!state.voice || !text || !window.speechSynthesis) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ja-JP";
-  utterance.rate = 0.96;
-  const voice = pickVoice();
-  if (voice) utterance.voice = voice;
-  utterance.onstart = () => document.body.classList.add("is-speaking");
-  utterance.onend = () => document.body.classList.remove("is-speaking");
-  utterance.onerror = () => document.body.classList.remove("is-speaking");
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
-}
-function stopSpeaking() {
-  document.body.classList.remove("is-speaking");
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-}
-if (window.speechSynthesis) {
-  window.speechSynthesis.addEventListener("voiceschanged", () => {
-    voicesReady = true;
-  });
-}
-
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-if (Recognition) {
-  recognition = new Recognition();
-  recognition.lang = "ja-JP";
-  recognition.interimResults = true;
-  recognition.continuous = false;
-  recognition.onstart = () => {
-    state.listening = true;
-    els.micBtn.classList.add("listening");
-    els.micBtn.textContent = "聴いています…";
-    els.hint.textContent = "マイクに向かって、選択肢のことばで話してください。";
-  };
-  recognition.onend = () => {
-    state.listening = false;
-    els.micBtn.classList.remove("listening");
-    els.micBtn.textContent = "🎙️ 声で答える";
-  };
-  recognition.onerror = (event) => {
-    const reason = event.error === "not-allowed"
-      ? "マイクの使用が許可されていません。"
-      : "音声を取得できませんでした。ボタンからも選べます。";
-    els.hint.textContent = reason;
-  };
-  recognition.onresult = (event) => {
-    let finalText = "";
-    let interim = "";
-    for (let i = event.resultIndex; i < event.results.length; i += 1) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) finalText += transcript;
-      else interim += transcript;
-    }
-    els.answer.value = (finalText || interim).trim();
-    if (finalText.trim()) submitAnswer(finalText.trim());
-  };
-} else {
-  els.micBtn.disabled = true;
-  els.micBtn.textContent = "音声入力非対応";
-}
-
-function setVoice(on) {
-  state.voice = on;
-  els.voiceToggle.setAttribute("aria-pressed", on ? "true" : "false");
-  els.voiceToggle.textContent = on ? "音声ガイド: ON" : "音声ガイド: OFF";
-  if (!on) stopSpeaking();
-}
-
-function currentOptions() {
-  if (state.step === "category") return CATEGORIES;
-  if (state.step === "style") return STYLES;
-  if (state.step === "budget") return BUDGETS;
-  return [];
-}
-function promptFor(step) {
-  if (step === "category") return config.greeting;
-  if (step === "style") {
-    return CATEGORY_LABEL[state.category] + "ですね。お好みのデザインを教えてください。";
-  }
-  if (step === "budget") return "かしこまりました。ご予算の目安を教えてください。税込でご提案します。";
-  return "ご条件に近い3点をご用意しました。気になる一品は、商品ページで質感や詳細をご覧いただけます。";
-}
-
-function inCategory(product, category) {
-  if (category === "gift") return product.category === "gift" || product.gift;
-  return product.category === category;
-}
-function matchesBudget(price, budget) {
-  if (budget === "under30") return price <= 30000;
-  if (budget === "mid") return price > 30000 && price <= 80000;
-  if (budget === "high") return price > 80000;
-  return true;
-}
-function budgetCenter(budget) {
-  if (budget === "under30") return 20000;
-  if (budget === "mid") return 55000;
-  return 100000;
-}
-function recommend() {
-  const center = budgetCenter(state.budget);
-  const inCat = PRODUCTS.filter((product) => inCategory(product, state.category));
-  const strict = inCat
-    .filter((product) => product.styles.includes(state.style))
-    .map((product) => ({ product, matched: true }))
-    .sort((a, b) => {
-      const budgetDelta = Number(matchesBudget(b.product.price, state.budget)) - Number(matchesBudget(a.product.price, state.budget));
-      if (budgetDelta) return budgetDelta;
-      return Math.abs(a.product.price - center) - Math.abs(b.product.price - center);
-    });
-  const picked = strict.slice(0, 3);
-  if (picked.length < 3) {
-    inCat.forEach((product) => {
-      if (picked.length >= 3 || picked.some((item) => item.product.id === product.id)) return;
-      picked.push({ product, matched: false });
-    });
-  }
-  return { items: picked, relaxed: picked.some((item) => !item.matched) };
-}
-
-function render() {
-  els.thread.innerHTML = messages.map((message) => {
-    if (message.role === "products") return renderProducts(message.items);
-    const who = message.role === "user" ? "あなた" : config.brandName;
-    return `<article class="bubble ${message.role === "user" ? "user" : "concierge"}">
-      <span class="who">${escapeHtml(who)}</span>${escapeHtml(message.text)}</article>`;
-  }).join("");
-  els.thread.scrollTop = els.thread.scrollHeight;
-
-  const options = currentOptions();
-  els.choices.className = "choices" + (options.length === 4 ? " four" : "") + (options.length ? "" : " hidden");
-  els.choices.innerHTML = options.map((option) => `
-    <button class="choice" type="button" data-choice="${option.id}">
-      <strong>${escapeHtml(option.label)}</strong>
-      <span>${escapeHtml(option.hint)}</span>
-    </button>`).join("");
-}
-function renderProducts(items) {
-  return `<div class="products">${items.map(({ product, matched }) => `
-    <article class="card">
-      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}"
-        data-fallback="${escapeHtml(placeholder(product.name))}">
-      <div class="card-body">
-        <p class="card-cat">${escapeHtml(CATEGORY_LABEL[product.category] || "")}</p>
-        <h3>${escapeHtml(product.name)}</h3>
-        <p class="price">${yen(product.price)} <span style="color:var(--color-muted)">税込</span></p>
-        <p class="badge">${matched ? "条件に一致" : "近い候補"}</p>
-        <ul class="tags">${product.styles.map((style) => `<li>${escapeHtml(STYLE_LABEL[style] || style)}</li>`).join("")}</ul>
-        <a class="product-link" href="${escapeHtml(product.url)}" data-product="${escapeHtml(product.id)}"
-          ${/^https?:\/\//i.test(product.url) ? 'target="_blank" rel="noopener noreferrer"' : ""}>商品ページへ</a>
+  function render() {
+    const thread = document.getElementById("thread");
+    thread.innerHTML = messages.map(m => `
+      <div class="bubble ${m.role}">
+        <span class="who">${m.role === 'concierge' ? config.brandName : 'あなた'}</span>
+        <div>${m.text}</div>
+        ${m.products ? `
+          <div class="products" style="margin-top:12px;">
+            ${m.products.map(p => `
+              <div class="card">
+                <img src="${p.image}" alt="${p.name}">
+                <div class="card-body">
+                  <p class="card-cat">${CATEGORY_LABEL[p.category] || p.category}</p>
+                  <h3>${p.name}</h3>
+                  <p class="price">${p.price.toLocaleString()}円 税込</p>
+                  <p style="font-size:13px; color:var(--color-muted);">${p.copy}</p>
+                  <a class="product-link" href="${p.url}" target="_blank">商品ページへ</a>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
       </div>
-    </article>`).join("")}</div>`;
-}
+    `).join('');
+    thread.scrollTop = thread.scrollHeight;
 
-function pushConcierge(text) {
-  messages.push({ role: "concierge", text });
-  render();
-  speak(text);
-}
-function choose(id) {
-  const option = currentOptions().find((item) => item.id === id);
-  if (!option) return;
-  messages.push({ role: "user", text: option.label });
-  if (state.step === "category") {
-    state.category = id;
-    state.step = "style";
-    pushConcierge(promptFor("style"));
-    return;
+    const opts = currentOptions();
+    const choicesEl = document.getElementById("choices");
+    if (opts.length > 0 && state.step !== "done") {
+      choicesEl.className = opts.length === 4 ? "choices four" : "choices";
+      choicesEl.innerHTML = opts.map(o => `
+        <button class="choice" type="button" data-id="${o.id}">
+          <strong>${o.label}</strong>
+          <span>${o.hint}</span>
+        </button>
+      `).join('');
+      document.querySelectorAll(".choice").forEach(btn => {
+        btn.addEventListener("click", () => handleSelect(btn.dataset.id));
+      });
+    } else {
+      choicesEl.innerHTML = "";
+      choicesEl.className = "choices hidden";
+    }
   }
-  if (state.step === "style") {
-    state.style = id;
-    state.step = "budget";
-    pushConcierge(promptFor("budget"));
-    return;
+
+  function currentOptions() {
+    if (state.step === "category") return CATEGORIES;
+    if (state.step === "style") return STYLES;
+    if (state.step === "budget") return BUDGETS;
+    return [];
   }
-  if (state.step === "budget") {
-    state.budget = id;
-    const result = recommend();
-    state.step = "result";
-    const count = result.items.length;
-    const text = result.relaxed
-      ? "条件にぴったり合う点が" + count + "点に満たないため、近い候補も加えてお見せします。商品ページで細部をご確認ください。"
-      : "ご条件に合う" + count + "点をご用意しました。気になる一品は、商品ページで質感や詳細をご覧いただけます。";
-    messages.push({ role: "concierge", text });
-    messages.push({ role: "products", items: result.items });
+
+  function handleSelect(id) {
+    const opts = currentOptions();
+    const selected = opts.find(o => o.id === id);
+    if (!selected) return;
+
+    messages.push({ role: "user", text: selected.label });
+
+    if (state.step === "category") {
+      state.category = id;
+      state.step = "style";
+      messages.push({ role: "concierge", text: CATEGORY_LABEL[id] + "ですね。お好みのデザインを教えてください。" });
+    } else if (state.step === "style") {
+      state.style = id;
+      state.step = "budget";
+      messages.push({ role: "concierge", text: "かしこまりました。ご予算の目安を教えてください。税込で厳格に絞り込みます。" });
+    } else if (state.step === "budget") {
+      state.budget = id;
+      state.step = "done";
+      
+      const budgetObj = BUDGETS.find(b => b.id === id);
+      const matched = PRODUCTS.filter(p => {
+        if (p.category !== state.category) return false;
+        if (!p.styles.includes(state.style)) return false;
+        if (budgetObj.min && p.price < budgetObj.min) return false;
+        if (budgetObj.max && p.price > budgetObj.max) return false;
+        return true;
+      });
+
+      messages.push({
+        role: "concierge",
+        text: `ご条件に合う商品を ${matched.length} 点ご用意しました。`,
+        products: matched.length > 0 ? matched : PRODUCTS.slice(0, 3)
+      });
+    }
     render();
-    speak(text);
   }
-}
 
-function parseCategory(text) {
-  if (/ギフト|贈り物|プレゼント|贈答/.test(text)) return "gift";
-  if (/財布|さいふ|小物|カードケース|キーケース/.test(text)) return "wallet";
-  if (/バッグ|バック|かばん|鞄|トート|ショルダー/.test(text)) return "bag";
-  return null;
-}
-function parseStyle(text) {
-  if (/ミニマル|シンプル|無駄/.test(text)) return "minimal";
-  if (/スタイリッシュ|かっこ|シャープ|モダン|都会/.test(text)) return "stylish";
-  if (/カジュアル|日常|気軽|やわらか/.test(text)) return "casual";
-  if (/クラシック|伝統|上品|格式/.test(text)) return "classic";
-  return null;
-}
-function parseBudget(text) {
-  const normalized = text.replace(/,/g, "");
-  if (/8万以上|八万以上|プレミアム|高め|こだわら/.test(normalized)) return "high";
-  if (/以下|まで|以内|安い|お手頃|3万以下|2万|２万|1万|１万|万以下/.test(normalized)) return "under30";
-  const man = normalized.match(/(\d+)\s*万/);
-  if (man) {
-    const value = Number(man[1]);
-    if (value <= 3) return "under30";
-    if (value <= 8) return "mid";
-    return "high";
-  }
-  if (/中くらい|普通|標準|3から8|3〜8|3～8/.test(normalized)) return "mid";
-  return null;
-}
-function parseForStep(text) {
-  if (state.step === "category") return parseCategory(text);
-  if (state.step === "style") return parseStyle(text);
-  if (state.step === "budget") return parseBudget(text);
-  return null;
-}
-function submitAnswer(text) {
-  const cleaned = text.trim();
-  if (!cleaned) return;
-  els.answer.value = "";
-  if (state.step === "result") {
-    messages.push({ role: "user", text: cleaned });
-    pushConcierge("ほかの条件でお探しになるときは、「最初からやり直す」を押してください。");
-    return;
-  }
-  const id = parseForStep(cleaned);
-  if (!id) {
-    messages.push({ role: "user", text: cleaned });
-    pushConcierge("恐れ入ります。下の選択肢に近いことばで、もう一度教えてください。");
-    return;
-  }
-  choose(id);
-}
-
-function openDetail(product) {
-  els.detailImg.src = product.image;
-  els.detailImg.alt = product.name;
-  els.detailImg.onerror = () => { els.detailImg.src = placeholder(product.name); };
-  els.detailCat.textContent = CATEGORY_LABEL[product.category] || "";
-  els.detailName.textContent = product.name;
-  els.detailPrice.textContent = yen(product.price) + "（税込）";
-  els.detailCopy.textContent = product.copy;
-  els.detailTags.innerHTML = product.styles.map((style) => `<li>${escapeHtml(STYLE_LABEL[style] || style)}</li>`).join("");
-  els.detailUrl.textContent = "商品リンク: " + product.url;
-  els.detailLink.href = product.url;
-  if (/^https?:\/\//i.test(product.url)) {
-    els.detailLink.target = "_blank";
-    els.detailLink.rel = "noopener noreferrer";
-  } else {
-    els.detailLink.target = "";
-    els.detailLink.removeAttribute("rel");
-  }
-  if (location.hash !== "#" + product.id) history.replaceState(null, "", "#" + product.id);
-  els.detail.showModal();
-}
-function openFromHash() {
-  const id = location.hash.replace(/^#/, "");
-  const product = findProduct(id);
-  if (product) openDetail(product);
-}
-
-function resetConversation() {
-  stopSpeaking();
-  if (recognition && state.listening) recognition.stop();
-  state.step = "category";
-  state.category = null;
-  state.style = null;
-  state.budget = null;
-  messages = [{ role: "concierge", text: config.greeting }];
-  els.hint.textContent = "";
-  els.answer.value = "";
-  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
-  render();
-  speak(config.greeting);
-}
-
-els.voiceToggle.addEventListener("click", () => setVoice(!state.voice));
-els.themeBtn.addEventListener("click", () => {
-  presetIndex = (presetIndex + 1) % BRAND_PRESETS.length;
-  applyConfig(BRAND_PRESETS[presetIndex], { refreshGreeting: true, speak: true });
-  els.hint.textContent = config.brandName + " の表示に切り替えました。";
-});
-els.tuneBtn.addEventListener("click", () => {
-  const open = els.tuner.classList.toggle("open");
-  els.tuneBtn.setAttribute("aria-expanded", open ? "true" : "false");
-});
-els.resetBtn.addEventListener("click", resetConversation);
-els.choices.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-choice]");
-  if (!button) return;
-  choose(button.dataset.choice);
-});
-els.thread.addEventListener("click", (event) => {
-  const link = event.target.closest("[data-product]");
-  if (!link) return;
-  const product = findProduct(link.dataset.product);
-  if (!product) return;
-  if (/^https?:\/\//i.test(product.url)) return;
-  event.preventDefault();
-  openDetail(product);
-});
-els.thread.addEventListener("error", (event) => {
-  const img = event.target;
-  if (img.tagName !== "IMG" || !img.dataset.fallback || img.dataset.broken) return;
-  img.dataset.broken = "1";
-  img.src = img.dataset.fallback;
-}, true);
-els.composer.addEventListener("submit", (event) => {
-  event.preventDefault();
-  submitAnswer(els.answer.value);
-});
-els.micBtn.addEventListener("click", () => {
-  if (!recognition) {
-    els.hint.textContent = "このブラウザは音声入力に対応していません。選択肢か文字でお答えください。";
-    return;
-  }
-  if (!window.isSecureContext) {
-    els.hint.textContent = "音声入力は localhost か HTTPS で開いたときに使えます。";
-    return;
-  }
-  if (state.listening) {
-    recognition.stop();
-    return;
-  }
-  try {
-    recognition.start();
-  } catch (error) {
-    els.hint.textContent = "マイクを開始できませんでした。少し待って再度お試しください。";
-  }
-});
-["tuneBrand", "tuneGreeting", "tuneMain", "tuneBg", "tuneRadius"].forEach((id) => {
-  els[id].addEventListener("input", () => {
-    config.brandName = els.tuneBrand.value || config.brandName;
-    config.greeting = els.tuneGreeting.value || config.greeting;
-    config.theme["--color-main"] = els.tuneMain.value;
-    config.theme["--color-bg"] = els.tuneBg.value;
-    config.theme["--radius"] = els.tuneRadius.value + "px";
-    applyConfig(config, { refreshGreeting: true });
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    state.step = "category";
+    state.category = null;
+    state.style = null;
+    state.budget = null;
+    messages = [{ role: "concierge", text: config.greeting }];
+    render();
   });
-});
-els.detailClose.addEventListener("click", () => els.detail.close());
-els.detail.addEventListener("click", (event) => {
-  if (event.target === els.detail) els.detail.close();
-});
-els.detailLink.addEventListener("click", (event) => {
-  const id = location.hash.replace(/^#/, "");
-  const product = findProduct(id);
-  if (product && !/^https?:\/\//i.test(product.url)) event.preventDefault();
-});
-window.addEventListener("hashchange", openFromHash);
 
-async function loadExternalConfig() {
-  const source = new URLSearchParams(location.search).get("config");
-  if (!source) return;
-  try {
-    const response = await fetch(source);
-    if (!response.ok) throw new Error("config");
-    const incoming = await response.json();
-    const merged = clone(config);
-    ["brandName", "tagline", "greeting", "appearance"].forEach((key) => {
-      if (incoming[key]) merged[key] = incoming[key];
-    });
-    if (incoming.theme) Object.assign(merged.theme, incoming.theme);
-    applyConfig(merged, { refreshGreeting: true, speak: true });
-    els.hint.textContent = "外部のブランド設定を読み込みました。";
-  } catch (error) {
-    els.hint.textContent = "ブランド設定の読み込みに失敗しました。画面内の設定を使います。";
+  document.getElementById("voiceToggle").addEventListener("click", () => {
+    state.voice = !state.voice;
+    document.getElementById("voiceToggle").setAttribute("aria-pressed", state.voice ? "true" : "false");
+    document.getElementById("voiceToggle").textContent = state.voice ? "音声ガイド: ON" : "音声ガイド: OFF";
+  });
+
+  document.getElementById("composer").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const val = document.getElementById("answer").value.trim();
+    if (!val) return;
+    document.getElementById("answer").value = "";
+    messages.push({ role: "user", text: val });
+    messages.push({ role: "concierge", text: "自由入力での検索は、上の選択肢から進めていただくか、「最初からやり直す」をお試しください。" });
+    render();
+  });
+
+  // 初期化実行
+  async function init() {
+    await syncShopifyProducts();
+    render();
   }
-}
-
-applyConfig(config);
-resetConversation();
-loadExternalConfig();
-openFromHash();
+  init();
 </script>
 </body>
 </html>
