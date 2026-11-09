@@ -34,18 +34,17 @@
     background: var(--color-bg);
     letter-spacing: 0.04em;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: 80px; /* フローティングメニュー分の余白 */
   }
 
   button { font-family: inherit; color: inherit; cursor: pointer; }
 
   .app {
     min-height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
     max-width: 800px;
     margin: 0 auto;
-    padding: 24px 20px 20px;
+    padding: 24px 20px 100px 20px; /* フローティングメニューに隠れないよう下部に十分な余白を確保 */
   }
 
   .header {
@@ -55,6 +54,7 @@
     padding-bottom: 16px;
     border-bottom: 1px solid var(--color-line);
     margin-bottom: 12px;
+    flex-shrink: 0;
   }
   .eyebrow {
     margin: 0 0 4px;
@@ -93,8 +93,14 @@
   .btn-reset svg { width: 12px; height: 12px; fill: currentColor; }
   .btn-reset:hover { border-color: var(--color-accent); color: var(--color-text); }
 
-  .thread {
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
+  }
+
+  .thread {
     padding: 10px 0;
     display: flex;
     flex-direction: column;
@@ -136,12 +142,12 @@
     border: 1px solid var(--color-line);
   }
 
-  /* スマホ1画面に4つ収まるグリッド・コンパクトカード設計 */
+  /* 選択肢グリッド */
   .choices {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    margin-top: 10px;
+    margin: 10px 0 20px 0;
   }
   .choices:empty, .choices.hidden { display: none; }
   
@@ -223,7 +229,7 @@
   .product-link svg { width: 10px; height: 10px; fill: currentColor; }
   .product-link:hover { opacity: 0.9; }
 
-  /* 下部フローティングメニュー（ランキング・カテゴリ・素材・金額） */
+  /* 下部フローティングメニュー */
   .floating-nav {
     position: fixed;
     bottom: 0;
@@ -258,15 +264,17 @@
   .nav-btn:hover, .nav-btn.active { color: var(--color-main); background: #f4f0eb; }
 
   .footer {
-    margin-top: 20px;
+    margin-top: auto;
+    padding-top: 20px;
     display: flex;
     justify-content: space-between;
     font-size: 9px;
     color: var(--color-muted);
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
-    .app { padding: 16px 12px 12px; }
+    .app { padding: 16px 12px 90px 12px; }
     .products { grid-template-columns: 1fr; }
   }
 </style>
@@ -286,13 +294,15 @@
       </button>
     </header>
 
-    <main class="thread" id="thread" aria-live="polite"></main>
-    <div class="choices" id="choices"></div>
+    <div class="main-content">
+      <main class="thread" id="thread" aria-live="polite"></main>
+      <div class="choices" id="choices"></div>
 
-    <footer class="footer">
-      <span id="footerBrand">DAYSART -Classic-</span>
-      <span>Secure Concierge Widget</span>
-    </footer>
+      <footer class="footer">
+        <span id="footerBrand">DAYSART -Classic-</span>
+        <span>Secure Concierge Widget</span>
+      </footer>
+    </div>
   </div>
 
   <!-- 下部フローティングメニュー -->
@@ -367,7 +377,7 @@
   let messages = [{ role: "concierge", text: config.greeting }];
   
   const state = {
-    step: "menu", // 初期状態はメニュー選択待ち
+    step: "menu",
     selectedAction: null,
     selectedCategory: null,
     selectedType: null,
@@ -433,7 +443,10 @@
         ` : ''}
       </div>
     `).join('');
-    thread.scrollTop = thread.scrollHeight;
+    
+    // スクロールを一番下に追従
+    const mainContent = document.querySelector(".main-content");
+    mainContent.scrollTop = mainContent.scrollHeight;
 
     const opts = currentOptions();
     const choicesEl = document.getElementById("choices");
@@ -454,7 +467,6 @@
       choicesEl.className = "choices hidden";
     }
 
-    // フローティングメニューのactive状態更新
     document.querySelectorAll(".nav-btn").forEach(btn => {
       if (btn.dataset.action === state.selectedAction) {
         btn.classList.add("active");
@@ -466,7 +478,6 @@
 
   function currentOptions() {
     if (state.step === "category_select") {
-      // 全カテゴリを平坦に並べて一発選択
       let list = [];
       config.purposes.forEach(p => {
         p.categories.forEach(c => {
@@ -583,7 +594,6 @@
       const isBag = id === "rank_bag";
       messages.push({ role: "user", text: isBag ? "バッグ部門 人気TOP3" : "財布部門 人気TOP3" });
       
-      // ランキング用疑似抽出
       const matched = PRODUCTS.slice(0, 3);
       state.step = "done";
       messages.push({
@@ -592,7 +602,6 @@
         products: matched
       });
     } else if (state.step === "category_select") {
-      // どの目的の中にあるカテゴリかを探す
       let foundCat = null;
       config.purposes.forEach(p => {
         const c = p.categories.find(cat => cat.id === id);
@@ -650,7 +659,6 @@
     render();
   }
 
-  // フローティングメニューのボタンイベント設定
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       handleNavClick(btn.dataset.action);
