@@ -125,6 +125,18 @@
     text-transform: uppercase;
   }
 
+  /* ユーザー選択履歴に残る画像のスタイル */
+  .user-selected-img {
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 8px;
+    display: block;
+    border: 1px solid var(--color-line);
+  }
+
   .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
   .choices:empty, .choices.hidden { display: none; }
   
@@ -142,7 +154,6 @@
   }
   .choice:hover { border-color: var(--color-accent); transform: translateY(-1px); }
   
-  /* 大本・選択肢画像の統一スタイル */
   .choice-img {
     width: calc(100% + 36px);
     margin: -16px -18px 12px -18px;
@@ -327,7 +338,6 @@
     if (config.logoFilter === "sepia") filterClass = "filter-sepia";
     else if (config.logoFilter === "dark") filterClass = "filter-dark";
     else if (config.logoFilter === "monochrome") filterClass = "filter-monochrome";
-
     brandContainer.innerHTML = `<img src="${config.logoUrl}" alt="${config.brandName}" class="brand-logo ${filterClass}">`;
   } else {
     document.getElementById("brandNameLabel").textContent = config.brandName;
@@ -384,6 +394,7 @@
       <div class="bubble ${m.role}">
         <span class="who">${m.role === 'concierge' ? config.brandName : 'あなた'}</span>
         <div>${m.text}</div>
+        ${m.image ? `<img src="${m.image}" alt="選択した画像" class="user-selected-img">` : ''}
         ${m.products && m.products.length > 0 ? `
           <div class="products">
             ${m.products.map(p => `
@@ -470,12 +481,7 @@
         if (!u) return null;
         const found = PRODUCTS.find(p => p.url === u || p.id === u.split('/').pop());
         if (found) return found;
-        return { 
-          name: category.label, 
-          price: 0, 
-          url: u, 
-          image: "" 
-        };
+        return { name: category.label, price: 0, url: u, image: "" };
       }).filter(Boolean);
     } else {
       const minPrice = budget ? budget.min : 0;
@@ -545,7 +551,8 @@
       state.step = "category";
       state.productOffset = 0;
 
-      messages.push({ role: "user", text: purpose.label });
+      // ユーザーの選択を画像付きで履歴に追加
+      messages.push({ role: "user", text: purpose.label, image: purpose.image || "" });
       messages.push({ role: "concierge", text: `${purpose.label}ですね。それでは、ご覧になりたいカテゴリーをお選びください。` });
 
     } else if (state.step === "category") {
@@ -553,7 +560,8 @@
       if (!category) return;
       state.selectedCategory = category;
 
-      messages.push({ role: "user", text: category.label });
+      // カテゴリ（素材など）の選択を画像付きで履歴に追加
+      messages.push({ role: "user", text: category.label, image: category.image || "" });
 
       if (category.mode === "manual" || state.selectedPurpose.id === "support") {
         state.step = "done";
