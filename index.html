@@ -176,7 +176,7 @@
   .choice strong { display: block; font-weight: 500; font-size: 12px; letter-spacing: 0.03em; }
   .choice span { display: block; margin-top: 2px; color: var(--color-muted); font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  /* ランキング用グリッド（複数商品表示） */
+  /* グリッド商品一覧 */
   .products {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -397,6 +397,7 @@
   document.documentElement.style.setProperty("--color-main", config.mainColor);
 
   let PRODUCTS = [];
+  let RANKING_PRODUCTS = [];
   let messages = [{ role: "concierge", text: config.greeting }];
   
   const state = {
@@ -410,30 +411,48 @@
 
   async function syncShopifyProducts() {
     if (!config.shopifyDomain) return;
+    const domain = config.shopifyDomain.replace(/\/$/, '');
+    
+    // 全商品同期
     try {
-      const url = config.shopifyDomain.replace(/\/$/, '') + '/products.json';
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.products && data.products.length > 0) {
-        PRODUCTS = data.products.map(p => {
-          const rawPrice = p.variants[0]?.price || "0";
-          const numericPrice = Math.round(parseFloat(rawPrice));
-          const tagList = p.tags ? (Array.isArray(p.tags) ? p.tags : p.tags.split(',')).map(t => t.trim()) : [];
-          return {
-            id: p.handle,
-            name: p.title,
-            price: numericPrice,
-            url: `${config.shopifyDomain.replace(/\/$/, '')}/products/${p.handle}`,
-            image: p.images[0]?.src || "",
-            tags: tagList,
-            searchText: (p.title + " " + tagList.join(" ")).toLowerCase()
-          };
-        });
+      const res = await fetch(`${domain}/products.json`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products && data.products.length > 0) {
+          PRODUCTS = data.products.map(p => formatProduct(p, domain));
+        }
       }
     } catch (e) {
-      console.log("Shopify同期エラー", e);
+      console.log("Shopify全商品同期エラー", e);
     }
+
+    // ランキングコレクション専用同期 (collections/ranking/products.json)
+    try {
+      const rankRes = await fetch(`${domain}/collections/ranking/products.json`);
+      if (rankRes.ok) {
+        const rankData = await rankRes.json();
+        if (rankData.products && rankData.products.length > 0) {
+          RANKING_PRODUCTS = rankData.products.map(p => formatProduct(p, domain));
+        }
+      }
+    } catch (e) {
+      console.log("Shopifyランキング同期エラー", e);
+    }
+  }
+
+  function formatProduct(p, domain) {
+    const rawPrice = p.variants[0]?.price || "0";
+    const numericPrice = Math.round(parseFloat(rawPrice));
+    const tagList = p.tags ? (Array.isArray(p.tags) ? p.tags : p.tags.split(',')).map(t => t.trim()) : [];
+    return {
+      id: p.handle,
+      name: p.title,
+      price: numericPrice,
+      url: `${domain}/products/${p.handle}`,
+      image: p.images[0]?.src || "",
+      tags: tagList,
+      searchText: (p.title + " " + tagList.join(" ")).toLowerCase()
+    };
   }
 
   function renderFloatingNav() {
@@ -466,7 +485,6 @@
         const action = btn.dataset.action;
         const targetUrl = config.navSettings[action]?.url;
         
-        // ランキングの場合はURL直飛びせずウィジェット内でブロック表示する
         if (action === "ranking") {
           handleNavClick(action);
           return;
@@ -587,9 +605,10 @@
 
     if (action === "ranking") {
       state.step = "done";
-      // 上位品番を抽出（最大10商品：5*2構成）
-      const rankingProducts = PRODUCTS.slice(0, 10);
-      const rankingUrl = navSetting?.url || "";
+      // ランキングコレクションから取得した順に最大10商品を使用（取得できていなければ全商品フォールバック）
+      const listSource = RANKING_PRODUCTS.length > 0 ? RANKING_PRODUCTS : PRODUCTS;
+      const rankingProducts = listSource.slice(0, 10);
+      const rankingUrl = navSetting?.url || "https://daysart-classic.com/collections/ranking";
       
       messages = [
         { role: "concierge", text: config.greeting },
@@ -725,6 +744,9 @@
     } else if (state.step === "category_select") {
       let foundCat = null;
       config.purposes.forEach(p => {
+        (p.categories || []).forEach(c => {
+          list.push({ id: c.id, label: c.label, hint: c.hint, image: c.image || "" });
+        });
         const c = (p.categories || []).find(cat => cat.id === id);
         if (c) foundCat = c;
       });
