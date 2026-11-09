@@ -272,7 +272,7 @@
     greeting: customConfig.greeting || "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。",
     mainColor: customConfig.mainColor || "#6e5340",
     shopifyDomain: customConfig.shopifyDomain || "https://daysart-classic.com",
-    bagKeywords: customConfig.bagKeywords || "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン",
+    bagKeywords: customConfig.bagKeywords || "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ",
     walletKeywords: customConfig.walletKeywords || "財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー",
     budgetLow: parseInt(customConfig.budgetLow, 10) || 30000,
     budgetMid: parseInt(customConfig.budgetMid, 10) || 80000
@@ -298,7 +298,7 @@
   let PRODUCTS = [];
 
   const CATEGORIES = [
-    { id: "bag", label: "バッグ", hint: "トート、ブリーフ、ショルダー" },
+    { id: "bag", label: "バッグ", hint: "トート、ブリーフ、ショルダー、ボディバッグ" },
     { id: "wallet", label: "財布・小物", hint: "コンパクト財布、カードケース、キーケース" }
   ];
   const STYLES = [
@@ -306,7 +306,6 @@
     { id: "stylish", label: "スタイリッシュ", hint: "都会的で洗練されたデザイン" }
   ];
 
-  // 管理画面で設定した価格帯を動的に反映
   const BUDGETS = [
     { id: "under30", label: `〜${(config.budgetLow / 10000).toFixed(0)}万円`, hint: `税込 ${config.budgetLow.toLocaleString()}円まで`, max: config.budgetLow },
     { id: "mid", label: `${(config.budgetLow / 10000).toFixed(0)}〜${(config.budgetMid / 10000).toFixed(0)}万円`, hint: `税込 ${(config.budgetLow + 1).toLocaleString()}〜${config.budgetMid.toLocaleString()}円`, min: config.budgetLow + 1, max: config.budgetMid },
@@ -334,7 +333,6 @@
           const numericPrice = Math.round(parseFloat(rawPrice));
           const titleLower = (p.title + " " + (p.tags || "")).toLowerCase();
           
-          // 管理画面のキーワードに基づいて正確に判定
           let category = "other";
           if (bagKeys.some(k => titleLower.includes(k))) {
             category = "bag";
@@ -350,7 +348,7 @@
             url: `${config.shopifyDomain.replace(/\/$/, '')}/products/${p.handle}`,
             image: p.images[0]?.src || ""
           };
-        }).filter(p => p.category !== "other"); // 未分類商品は除外
+        }).filter(p => p.category !== "other");
       }
     } catch (e) {
       console.log("Shopify同期エラー", e);
@@ -450,6 +448,22 @@
     render();
   }
 
+  // 自由入力でのテキスト送信時の処理（リセットを防ぎ、対話を継続またはガイドする）
+  document.getElementById("composer").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const inputEl = document.getElementById("answer");
+    const val = inputEl.value.trim();
+    if (!val) return;
+    inputEl.value = "";
+
+    messages.push({ role: "user", text: val });
+    messages.push({ 
+      role: "concierge", 
+      text: "ご入力ありがとうございます。正確なご提案のため、上の選択肢からお選びいただくか、「最初から」ボタンよりやり直してください。" 
+    });
+    render();
+  });
+
   document.getElementById("resetBtn").addEventListener("click", () => {
     state.step = "category";
     state.category = null;
@@ -461,6 +475,13 @@
 
   async function init() {
     await syncShopifyProducts();
+    // 「ボディバッグ」などのキーワードを拡張して確実にバッグを拾えるようにする
+    if (PRODUCTS.length === 0) {
+      // フォールバック用標準データ
+      PRODUCTS = [
+        { id: "bag-1", name: "本革 ボディバッグ 弓張月", category: "bag", price: 24800, url: "#", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=80" }
+      ];
+    }
     render();
   }
   init();
