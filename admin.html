@@ -10,11 +10,11 @@
 <style>
   :root {
     --color-main: #6e5340;
-    --color-bg: #f5f2ed;
+    --color-bg: #f9f8f6;
     --color-surface: #ffffff;
-    --color-text: #2c2520;
-    --color-line: #e6dfd5;
-    --radius: 14px;
+    --color-text: #2b2520;
+    --color-line: #eae4db;
+    --radius: 12px;
   }
   body {
     margin: 0;
@@ -23,31 +23,39 @@
     background: var(--color-bg);
     color: var(--color-text);
   }
-  .wrap { max-width: 680px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: 0 12px 32px rgba(44, 37, 32, 0.04); }
-  h1 { margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.05em; }
+  .wrap { max-width: 680px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: 0 10px 30px rgba(43, 37, 32, 0.03); }
+  h1 { margin-top: 0; font-size: 20px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; }
   .section { margin-top: 28px; }
-  .section h2 { font-size: 15px; color: var(--color-main); margin-bottom: 14px; letter-spacing: 0.04em; }
+  .section h2 { font-size: 14px; color: var(--color-main); margin-bottom: 14px; letter-spacing: 0.04em; }
   .field { display: grid; gap: 8px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
-  input[type="text"], input[type="url"] { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; box-sizing: border-box; }
+  input[type="text"], input[type="url"], select { width: 100%; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 8px; background: #faf8f5; font-size: 14px; box-sizing: border-box; outline: none; }
   input[type="color"] { width: 60px; height: 40px; border: 1px solid var(--color-line); border-radius: 8px; padding: 2px; background: #faf8f5; cursor: pointer; }
-  .btn { background: var(--color-main); color: #fff; border: none; padding: 14px 24px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: 500; letter-spacing: 0.06em; width: 100%; transition: opacity 0.2s; }
+  .btn { background: var(--color-main); color: #fff; border: none; padding: 14px 24px; font-size: 14px; border-radius: var(--radius); cursor: pointer; font-weight: 500; letter-spacing: 0.06em; width: 100%; transition: opacity 0.2s; }
   .btn:hover { opacity: 0.9; }
-  .note { font-size: 12px; color: #8c8278; line-height: 1.6; margin-top: 4px; }
+  .note { font-size: 11px; color: #8c8278; line-height: 1.6; margin-top: 4px; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>コンシェルジュ 運用管理パネル</h1>
-    <p class="note">設定した内容はブラウザの記憶領域（localStorage）に保存され、お客様画面へ即時適用されます。</p>
+    <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面へ即時反映されます。</p>
 
     <div class="section">
       <h2>1. ブランド・基本設定</h2>
       <label class="field">ブランド名
         <input type="text" id="brandName" value="DAYSART -Classic-">
       </label>
-      <label class="field">ブランドロゴ画像 URL (PNG / SVG 等)
-        <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
-        <span class="note">※画像URLを設定すると、テキストロゴの代わりに画像が表示されます。</span>
+      <label class="field">ブランドロゴ画像 URL (PNG等)
+        <input type="url" id="logoUrl" placeholder="https://...">
+      </label>
+      <label class="field">ロゴのカラーモード / フィルター
+        <select id="logoFilter">
+          <option value="none">元の画像のまま（カラー無加工）</option>
+          <option value="sepia">セピア・アンティーク調に馴染ませる</option>
+          <option value="dark">シックなダークトーンにする</option>
+          <option value="monochrome">モノトーン（黒・白系）にする</option>
+        </select>
+        <span class="note">※ロゴが浮いてしまう場合に、サイトの雰囲気に合わせて色味を自動調整します。</span>
       </label>
       <label class="field">キャッチコピー
         <input type="text" id="tagline" value="革と対話するコンシェルジュ">
@@ -61,18 +69,17 @@
     </div>
 
     <div class="section">
-      <h2>2. Shopify / 外部API 同期設定</h2>
+      <h2>2. Shopify同期設定</h2>
       <label class="field">Shopify ストア URL
         <input type="url" id="shopifyDomain" placeholder="https://daysart-classic.com">
       </label>
-      <p class="note">※ShopifyストアのURLを設定すると、最新の商品データを全自動で同期・取得します。</p>
     </div>
 
     <button class="btn" id="saveBtn" type="button">設定を保存する</button>
-    <p id="statusMsg" style="margin-top: 12px; font-size: 13px; color: #4a7c59; text-align: center; font-weight: 500;"></p>
+    <p id="statusMsg" style="margin-top: 12px; font-size: 12px; color: #4a7c59; text-align: center; font-weight: 500;"></p>
 
-    <div class="section" style="margin-top: 36px; border-top: 1px solid var(--color-line); padding-top: 24px;">
-      <a href="index.html" target="_blank" style="color: var(--color-main); font-weight: 500; text-decoration: none; font-size: 14px;">→ お客様用画面（index.html）を確認する</a>
+    <div class="section" style="margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 20px;">
+      <a href="index.html" target="_blank" style="color: var(--color-main); font-weight: 500; text-decoration: none; font-size: 13px;">→ お客様用画面（index.html）を確認する</a>
     </div>
   </div>
 
@@ -80,6 +87,7 @@
   const saved = JSON.parse(localStorage.getItem("concierge_config") || "{}");
   if (saved.brandName) document.getElementById("brandName").value = saved.brandName;
   if (saved.logoUrl) document.getElementById("logoUrl").value = saved.logoUrl;
+  if (saved.logoFilter) document.getElementById("logoFilter").value = saved.logoFilter;
   if (saved.tagline) document.getElementById("tagline").value = saved.tagline;
   if (saved.greeting) document.getElementById("greeting").value = saved.greeting;
   if (saved.mainColor) document.getElementById("mainColor").value = saved.mainColor;
@@ -89,6 +97,7 @@
     const config = {
       brandName: document.getElementById("brandName").value,
       logoUrl: document.getElementById("logoUrl").value,
+      logoFilter: document.getElementById("logoFilter").value,
       tagline: document.getElementById("tagline").value,
       greeting: document.getElementById("greeting").value,
       mainColor: document.getElementById("mainColor").value,
@@ -96,7 +105,7 @@
     };
     localStorage.setItem("concierge_config", JSON.stringify(config));
     const msg = document.getElementById("statusMsg");
-    msg.textContent = "設定を正常に保存しました。";
+    msg.textContent = "設定を保存しました。";
     setTimeout(() => { msg.textContent = ""; }, 3000);
   });
 </script>
