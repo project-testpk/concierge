@@ -65,7 +65,6 @@
     font-weight: 500;
   }
   
-  /* ロゴ画像のカラー調整クラス */
   .brand-logo { max-height: 42px; width: auto; object-fit: contain; display: block; }
   .filter-sepia { filter: sepia(100%) hue-rotate(320deg) saturate(60%) brightness(90%); }
   .filter-dark { filter: brightness(40%) contrast(150%); }
@@ -272,7 +271,11 @@
     tagline: customConfig.tagline || "革と対話するコンシェルジュ",
     greeting: customConfig.greeting || "ようこそ。革の表情から、今日の一品を一緒に見つけましょう。",
     mainColor: customConfig.mainColor || "#6e5340",
-    shopifyDomain: customConfig.shopifyDomain || "https://daysart-classic.com"
+    shopifyDomain: customConfig.shopifyDomain || "https://daysart-classic.com",
+    bagKeywords: customConfig.bagKeywords || "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン",
+    walletKeywords: customConfig.walletKeywords || "財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー",
+    budgetLow: parseInt(customConfig.budgetLow, 10) || 30000,
+    budgetMid: parseInt(customConfig.budgetMid, 10) || 80000
   };
 
   const brandContainer = document.getElementById("brandContainer");
@@ -302,10 +305,12 @@
     { id: "classic", label: "クラシック", hint: "上品で、長く使う伝統デザイン" },
     { id: "stylish", label: "スタイリッシュ", hint: "都会的で洗練されたデザイン" }
   ];
+
+  // 管理画面で設定した価格帯を動的に反映
   const BUDGETS = [
-    { id: "under30", label: "〜3万円", hint: "税込 30,000円まで", max: 30000 },
-    { id: "mid", label: "3〜8万円", hint: "税込 30,001〜80,000円", min: 30001, max: 80000 },
-    { id: "high", label: "8万円〜", hint: "税込 80,001円から", min: 80001 }
+    { id: "under30", label: `〜${(config.budgetLow / 10000).toFixed(0)}万円`, hint: `税込 ${config.budgetLow.toLocaleString()}円まで`, max: config.budgetLow },
+    { id: "mid", label: `${(config.budgetLow / 10000).toFixed(0)}〜${(config.budgetMid / 10000).toFixed(0)}万円`, hint: `税込 ${(config.budgetLow + 1).toLocaleString()}〜${config.budgetMid.toLocaleString()}円`, min: config.budgetLow + 1, max: config.budgetMid },
+    { id: "high", label: `${(config.budgetMid / 10000).toFixed(0)}万円〜`, hint: `税込 ${(config.budgetMid + 1).toLocaleString()}円から`, min: config.budgetMid + 1 }
   ];
 
   const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((s) => [s.id, s.label]));
@@ -321,21 +326,31 @@
       if (!res.ok) return;
       const data = await res.json();
       if (data.products && data.products.length > 0) {
+        const bagKeys = config.bagKeywords.split(',').map(k => k.trim().toLowerCase());
+        const walletKeys = config.walletKeywords.split(',').map(k => k.trim().toLowerCase());
+
         PRODUCTS = data.products.map(p => {
           const rawPrice = p.variants[0]?.price || "0";
           const numericPrice = Math.round(parseFloat(rawPrice));
-          const titleLower = p.title.toLowerCase();
-          const isWallet = /ウォレット|財布|キーケース|カードケース|コイン/.test(titleLower);
+          const titleLower = (p.title + " " + (p.tags || "")).toLowerCase();
+          
+          // 管理画面のキーワードに基づいて正確に判定
+          let category = "other";
+          if (bagKeys.some(k => titleLower.includes(k))) {
+            category = "bag";
+          } else if (walletKeys.some(k => titleLower.includes(k))) {
+            category = "wallet";
+          }
           
           return {
             id: p.handle,
             name: p.title,
-            category: isWallet ? "wallet" : "bag",
+            category: category,
             price: numericPrice,
             url: `${config.shopifyDomain.replace(/\/$/, '')}/products/${p.handle}`,
             image: p.images[0]?.src || ""
           };
-        });
+        }).filter(p => p.category !== "other"); // 未分類商品は除外
       }
     } catch (e) {
       console.log("Shopify同期エラー", e);
