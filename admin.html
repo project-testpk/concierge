@@ -176,11 +176,11 @@
       <p class="note">多くのカテゴリや条件をまとめて管理したい場合は、CSVファイルで一括インポート・エクスポートが可能です。</p>
       
       <div class="csv-guide-box">
-        <strong>📋 CSVの書き方・ルール（誰でもわかる解説）</strong>
+        <strong>📋 CSVの書き方・ルール</strong>
         <ul style="margin: 8px 0 0 20px; padding: 0; line-height: 1.7;">
           <li>1行目はヘッダー（見出し）として必ずそのまま残してください。</li>
           <li>同じ <code>purpose_id</code>（目的ID）を持つ行は、同じ大本グループに自動まとめられます。</li>
-          <li><code>mode</code> 列には <code>dynamic</code>（自動抽出） または <code>manual</code>（固定URL3枠）を指定します。</li>
+          <li><code>purpose_image</code> 列に画像URLを入力すると、お客様画面の選択肢カードに画像が表示されます。</li>
         </ul>
         <div style="margin-top: 10px; display: flex; gap: 10px;">
           <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSVをダウンロード</button>
@@ -225,51 +225,21 @@
     purposes: [
       {
         id: "self",
-        label: "ご自身用（普段使い）",
-        hint: "日々の暮らしやビジネスに寄り添う一品",
+        label: "ご自身用（普段使い・通勤）",
+        hint: "日々の暮らしや仕事に寄り添う一品",
+        image: "",
         categories: [
           {
             id: "bag",
-            label: "バッグ",
-            hint: "トート、リュック、ショルダーなど",
+            label: "バッグ（トート・ショルダー）",
+            hint: "上質なレザーのトートやショルダーなど",
             mode: "dynamic",
             manualUrls: ["", "", ""],
-            keywords: "バッグ, トート, リュック, ブリーフ, ショルダー, ボストン, ボディバッグ",
+            keywords: "バッグ, トート, ショルダー, リュック, ボディバッグ",
             tags: "",
             minPrice: 0,
-            maxPrice: 150000,
+            maxPrice: 9999999,
             sortBy: "price_desc"
-          },
-          {
-            id: "wallet",
-            label: "財布・革小物",
-            hint: "長財布、二つ折り、名刺入れなど",
-            mode: "dynamic",
-            manualUrls: ["", "", ""],
-            keywords: "財布, ウォレット, キーケース, カードケース, コイン, 名刺入れ, カバー",
-            tags: "",
-            minPrice: 0,
-            maxPrice: 50000,
-            sortBy: "price_asc"
-          }
-        ]
-      },
-      {
-        id: "gift",
-        label: "ギフト（贈り物）",
-        hint: "大切な方へ感謝や記念の気持ちを込めて",
-        categories: [
-          {
-            id: "gift-all",
-            label: "ギフト全般・小物",
-            hint: "キーケース、名刺入れなど贈りやすいアイテム",
-            mode: "dynamic",
-            manualUrls: ["", "", ""],
-            keywords: "ギフト, プレゼント, キーケース, 名刺入れ, 財布",
-            tags: "gift",
-            minPrice: 0,
-            maxPrice: 30000,
-            sortBy: "tag_match"
           }
         ]
       }
@@ -308,6 +278,9 @@
             <input type="text" class="p-hint" value="${purpose.hint || ''}" data-index="${pIndex}">
           </label>
         </div>
+        <label class="field" style="margin-top: 12px;">大本カード画像 URL
+          <input type="url" class="p-image" value="${purpose.image || ''}" data-index="${pIndex}" placeholder="https://...">
+        </label>
         
         <div style="margin-top: 16px; border-top: 1px dashed var(--color-line); padding-top: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -375,7 +348,7 @@
                   <input type="text" class="c-min" value="${cat.minPrice ?? 0}" data-p="${pIndex}" data-c="${cIndex}">
                 </label>
                 <label class="field">最高価格（円）
-                  <input type="text" class="c-max" value="${cat.maxPrice ?? 200000}" data-p="${pIndex}" data-c="${cIndex}">
+                  <input type="text" class="c-max" value="${cat.maxPrice ?? 9999999}" data-p="${pIndex}" data-c="${cIndex}">
                 </label>
               </div>
             `}
@@ -398,6 +371,8 @@
       currentPurposes[target.dataset.index].label = target.value;
     } else if (target.classList.contains("p-hint")) {
       currentPurposes[target.dataset.index].hint = target.value;
+    } else if (target.classList.contains("p-image")) {
+      currentPurposes[target.dataset.index].image = target.value;
     } else if (target.classList.contains("c-label")) {
       currentPurposes[p].categories[c].label = target.value;
     } else if (target.classList.contains("c-hint")) {
@@ -409,7 +384,7 @@
     } else if (target.classList.contains("c-min")) {
       currentPurposes[p].categories[c].minPrice = parseInt(target.value) || 0;
     } else if (target.classList.contains("c-max")) {
-      currentPurposes[p].categories[c].maxPrice = parseInt(target.value) || 200000;
+      currentPurposes[p].categories[c].maxPrice = parseInt(target.value) || 9999999;
     } else if (target.classList.contains("c-url")) {
       const pos = target.dataset.pos;
       if (!currentPurposes[p].categories[c].manualUrls) currentPurposes[p].categories[c].manualUrls = ["", "", ""];
@@ -437,6 +412,7 @@
       id: "purpose_" + Date.now(),
       label: "新しい目的",
       hint: "説明文",
+      image: "",
       categories: [
         {
           id: "cat_" + Date.now(),
@@ -447,7 +423,7 @@
           keywords: "",
           tags: "",
           minPrice: 0,
-          maxPrice: 100000,
+          maxPrice: 9999999,
           sortBy: "price_desc"
         }
       ]
@@ -472,7 +448,7 @@
       keywords: "",
       tags: "",
       minPrice: 0,
-      maxPrice: 100000,
+      maxPrice: 9999999,
       sortBy: "price_desc"
     });
     renderPurposes();
@@ -490,9 +466,8 @@
   // --- CSV エクスポート機能 ---
   document.getElementById("exportCsvBtn").addEventListener("click", () => {
     let csvRows = [];
-    // ヘッダー
     csvRows.push([
-      "purpose_id", "purpose_label", "purpose_hint",
+      "purpose_id", "purpose_label", "purpose_hint", "purpose_image",
       "category_id", "category_label", "category_hint",
       "mode", "url_1", "url_2", "url_3",
       "keywords", "tags", "min_price", "max_price", "sort_by"
@@ -502,12 +477,12 @@
       p.categories.forEach(c => {
         const urls = c.manualUrls || ["", "", ""];
         const row = [
-          p.id, `"${p.label}"`, `"${p.hint || ''}"`,
+          p.id, `"${p.label}"`, `"${p.hint || ''}"`, `"${p.image || ''}"`,
           c.id, `"${c.label}"`, `"${c.hint || ''}"`,
           c.mode || "dynamic",
           `"${urls[0] || ''}"`, `"${urls[1] || ''}"`, `"${urls[2] || ''}"`,
           `"${c.keywords || ''}"`, `"${c.tags || ''}"`,
-          c.minPrice ?? 0, c.maxPrice ?? 200000,
+          c.minPrice ?? 0, c.maxPrice ?? 9999999,
           c.sortBy || "price_desc"
         ];
         csvRows.push(row.join(","));
@@ -526,10 +501,8 @@
   // --- サンプルCSVダウンロード ---
   document.getElementById("downloadCsvSampleBtn").addEventListener("click", () => {
     const sampleData = [
-      "purpose_id,purpose_label,purpose_hint,category_id,category_label,category_hint,mode,url_1,url_2,url_3,keywords,tags,min_price,max_price,sort_by",
-      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,bag,バッグ,トートやリュックなど,dynamic,,,,\"バッグ, トート, リュック\",\"\",0,150000,price_desc",
-      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,wallet,財布・革小物,長財布や名刺入れ,dynamic,,,,\"財布, ウォレット, 名刺入れ\",\"\",0,50000,price_asc",
-      "gift,ギフト（贈り物）,大切な方へ感謝を込めて,gift-all,ギフト全般・小物,贈りやすい小物アイテム,dynamic,,,,\"ギフト, プレゼント, キーケース\",\"gift\",0,30000,tag_match"
+      "purpose_id,purpose_label,purpose_hint,purpose_image,category_id,category_label,category_hint,mode,url_1,url_2,url_3,keywords,tags,min_price,max_price,sort_by",
+      "self,ご自身用（普段使い）,日々の暮らしに寄り添う一品,,bag,バッグ,トートやリュックなど,dynamic,,,,\"バッグ, トート, リュック\",\"\",0,9999999,price_desc"
     ];
     const blob = new Blob(["\uFEFF" + sampleData.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -555,7 +528,6 @@
           return;
         }
 
-        // CSVパース（簡易パーサー：ダブルクォート考慮）
         const parseCsvLine = (line) => {
           let result = [];
           let start = 0;
@@ -576,10 +548,10 @@
 
         for (let i = 1; i < lines.length; i++) {
           const cols = parseCsvLine(lines[i]);
-          if (cols.length < 15) continue;
+          if (cols.length < 16) continue;
 
           const [
-            pId, pLabel, pHint,
+            pId, pLabel, pHint, pImage,
             cId, cLabel, cHint,
             mode, url1, url2, url3,
             keywords, tags, minPrice, maxPrice, sortBy
@@ -590,6 +562,7 @@
               id: pId,
               label: pLabel,
               hint: pHint,
+              image: pImage || "",
               categories: []
             };
           }
@@ -603,7 +576,7 @@
             keywords: keywords,
             tags: tags,
             minPrice: parseInt(minPrice) || 0,
-            maxPrice: parseInt(maxPrice) || 200000,
+            maxPrice: parseInt(maxPrice) || 9999999,
             sortBy: sortBy || "price_desc"
           });
         }
@@ -637,7 +610,6 @@
     setTimeout(() => { msg.textContent = ""; }, 4000);
   });
 
-  // 初期描画
   renderPurposes();
 </script>
 </body>

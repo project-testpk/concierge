@@ -127,6 +127,7 @@
 
   .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
   .choices:empty, .choices.hidden { display: none; }
+  
   .choice {
     text-align: left;
     background: var(--color-surface);
@@ -135,8 +136,22 @@
     padding: 16px 18px;
     box-shadow: var(--shadow);
     transition: all 0.2s;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   .choice:hover { border-color: var(--color-accent); transform: translateY(-1px); }
+  
+  /* 大本・選択肢画像の統一スタイル */
+  .choice-img {
+    width: calc(100% + 36px);
+    margin: -16px -18px 12px -18px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #f4f0eb;
+    display: block;
+  }
+
   .choice strong { display: block; font-weight: 500; font-size: 14px; letter-spacing: 0.03em; }
   .choice span { display: block; margin-top: 4px; color: var(--color-muted); font-size: 11px; line-height: 1.4; }
 
@@ -155,12 +170,25 @@
     display: flex;
     flex-direction: column;
   }
-  .card img {
+  .card img, .card-img-placeholder {
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     background: #f4f0eb;
   }
+  .card-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+  }
+  .card-img-placeholder svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+    opacity: 0.6;
+  }
+
   .card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .card-cat { margin: 0; font-size: 9px; letter-spacing: 0.2em; color: var(--color-accent); text-transform: uppercase; }
   .card h3 { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -360,7 +388,10 @@
           <div class="products">
             ${m.products.map(p => `
               <div class="card">
-                <img src="${p.image}" alt="${p.name}">
+                ${p.image 
+                  ? `<img src="${p.image}" alt="${p.name}">` 
+                  : `<div class="card-img-placeholder"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/></svg></div>`
+                }
                 <div class="card-body">
                   <p class="card-cat">${state.selectedType && state.selectedType.id !== 'all_types' ? state.selectedType.label : (state.selectedCategory ? state.selectedCategory.label : '')}</p>
                   <h3>${p.name}</h3>
@@ -384,6 +415,7 @@
       choicesEl.className = "choices";
       choicesEl.innerHTML = opts.map(o => `
         <button class="choice" type="button" data-id="${o.id}">
+          ${o.image ? `<img src="${o.image}" alt="${o.label}" class="choice-img">` : ''}
           <strong>${o.label}</strong>
           <span>${o.hint || ''}</span>
         </button>
@@ -399,10 +431,10 @@
 
   function currentOptions() {
     if (state.step === "purpose") {
-      return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint }));
+      return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint, image: p.image || "" }));
     }
     if (state.step === "category" && state.selectedPurpose) {
-      return state.selectedPurpose.categories.map(c => ({ id: c.id, label: c.label, hint: c.hint }));
+      return state.selectedPurpose.categories.map(c => ({ id: c.id, label: c.label, hint: c.hint, image: c.image || "" }));
     }
     if (state.step === "type_sub") {
       return TYPE_OPTIONS;
@@ -431,39 +463,41 @@
     let matched = [];
 
     if (category && category.mode === "manual") {
-      const urls = category.manualUrls || [];
+      const urls = [category.url_1, category.url_2, category.url_3].filter(Boolean);
+      if (urls.length === 0) urls.push(category.manualUrls ? category.manualUrls[0] : "#");
+      
       matched = urls.map(u => {
         if (!u) return null;
         const found = PRODUCTS.find(p => p.url === u || p.id === u.split('/').pop());
         if (found) return found;
-        return { name: "おすすめピックアップ商品", price: 0, url: u, image: "" };
+        return { 
+          name: category.label, 
+          price: 0, 
+          url: u, 
+          image: "" 
+        };
       }).filter(Boolean);
     } else {
       const minPrice = budget ? budget.min : 0;
       const maxPrice = budget ? budget.max : 9999999;
 
-      // 素材タグ・キーワード（CSVのtagsとkeywordsを取得）
       const csvTags = (category ? (category.tags || "") : "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
       const csvKeywords = (category ? (category.keywords || "") : "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
 
-      // アイテムタイプキーワード
       let typeKeywords = [];
       if (state.selectedType && state.selectedType.id !== "all_types") {
         typeKeywords = state.selectedType.keywords;
       }
 
-      // 段階的マッチング（条件を緩めながら一致する候補を確実に探す）
       let candidates = PRODUCTS.filter(p => {
         if (p.price < minPrice || p.price > maxPrice) return false;
 
-        // 素材判定（タグ一致 OR 商品名・タグに素材名が含まれるか）
         let matchMaterial = true;
         if (csvTags.length > 0 || csvKeywords.length > 0) {
           const targets = [...csvTags, ...csvKeywords];
           matchMaterial = targets.some(t => p.searchText.includes(t));
         }
 
-        // タイプ判定（アイテム種別キーワードが含まれるか）
         let matchType = true;
         if (typeKeywords.length > 0) {
           matchType = typeKeywords.some(k => p.searchText.includes(k.toLowerCase()));
@@ -472,7 +506,6 @@
         return matchMaterial && matchType;
       });
 
-      // 該当商品がない場合のフォールバック①（素材のみでヒット）
       if (candidates.length === 0 && (csvTags.length > 0 || csvKeywords.length > 0)) {
         const targets = [...csvTags, ...csvKeywords];
         candidates = PRODUCTS.filter(p => {
@@ -481,12 +514,10 @@
         });
       }
 
-      // 該当商品がない場合のフォールバック②（全商品の中から価格帯でヒット）
       if (candidates.length === 0) {
         candidates = PRODUCTS.filter(p => p.price >= minPrice && p.price <= maxPrice);
       }
 
-      // 価格の高い順で並び替え
       candidates.sort((a, b) => b.price - a.price);
 
       if (candidates.length > 0) {
