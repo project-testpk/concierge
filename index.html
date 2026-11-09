@@ -142,7 +142,6 @@
     border: 1px solid var(--color-line);
   }
 
-  /* 選択肢グリッド */
   .choices {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -177,7 +176,6 @@
   .choice strong { display: block; font-weight: 500; font-size: 12px; letter-spacing: 0.03em; }
   .choice span { display: block; margin-top: 2px; color: var(--color-muted); font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  /* 商品提案カード */
   .products {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -229,7 +227,6 @@
   .product-link svg { width: 10px; height: 10px; fill: currentColor; }
   .product-link:hover { opacity: 0.9; }
 
-  /* 下部フローティングメニュー */
   .floating-nav {
     position: fixed;
     bottom: 0;
@@ -305,7 +302,6 @@
     </div>
   </div>
 
-  <!-- 下部フローティングメニュー（動的描画） -->
   <nav class="floating-nav" id="floatingNav"></nav>
 
 <script>
@@ -320,20 +316,13 @@
     mainColor: customConfig.mainColor || "#6e5340",
     shopifyDomain: customConfig.shopifyDomain || "https://daysart-classic.com",
     navSettings: customConfig.navSettings || {
-      ranking: { label: "ランキング", show: true, url: "" },
-      category: { label: "カテゴリ", show: true, url: "" },
-      material: { label: "素材", show: true, url: "" },
-      budget: { label: "金額", show: true, url: "" }
+      ranking: { label: "ランキング", purposeId: "", url: "", show: true },
+      category: { label: "カテゴリ", purposeId: "", url: "", show: true },
+      material: { label: "素材", purposeId: "material", url: "", show: true },
+      budget: { label: "金額", purposeId: "", url: "", show: true }
     },
     purposes: customConfig.purposes || []
   };
-
-  const TYPE_OPTIONS = [
-    { id: "all_types", label: "すべてのアイテム", hint: "素材に合うすべての商品から探す", keywords: "" },
-    { id: "bag", label: "バッグ（トート・ショルダー）", hint: "トート、ショルダー、リュックなど", keywords: ["バッグ", "トート", "ショルダー", "リュック", "ブリーフ", "鞄", "ミニトート"] },
-    { id: "wallet", label: "財布・ウォレット", hint: "長財布、二つ折り、コンパクト財布など", keywords: ["財布", "ウォレット", "二つ折り", "ロング", "マネークリップ"] },
-    { id: "goods", label: "キーケース・革小物", hint: "キーケース、名刺入れ、スマート小物など", keywords: ["キーケース", "名刺入れ", "カードケース", "カバー", "ケース", "小物"] }
-  ];
 
   const BUDGET_OPTIONS = [
     { id: "all", label: "指定なし（全価格帯）", hint: "価格にこだわらずおすすめを見る", min: 0, max: 9999999 },
@@ -365,14 +354,13 @@
   let PRODUCTS = [];
   let messages = [{ role: "concierge", text: config.greeting }];
   
-  // 初期状態を "purpose"（最初の大本カード表示）に設定
   const state = {
     step: "purpose",
     selectedAction: null,
     selectedCategory: null,
-    selectedType: null,
     selectedBudget: null,
-    productOffset: 0
+    productOffset: 0,
+    currentSubOptions: []
   };
 
   async function syncShopifyProducts() {
@@ -428,7 +416,6 @@
     });
     navEl.innerHTML = html;
 
-    // イベントバインド
     navEl.querySelectorAll(".nav-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
@@ -502,31 +489,19 @@
     if (state.step === "purpose") {
       return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint, image: p.image || "" }));
     }
+    if (state.step === "sub_category") {
+      return state.currentSubOptions || [];
+    }
     if (state.step === "category_select") {
       let list = [];
       config.purposes.forEach(p => {
-        p.categories.forEach(c => {
+        (p.categories || []).forEach(c => {
           list.push({ id: c.id, label: c.label, hint: c.hint, image: c.image || "" });
         });
       });
       return list;
     }
-    if (state.step === "material_select") {
-      return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint, image: p.image || "" }));
-    }
-    if (state.step === "budget_select") {
-      return BUDGET_OPTIONS;
-    }
-    if (state.step === "ranking_select") {
-      return [
-        { id: "rank_bag", label: "バッグ部門 人気TOP3", hint: "今最も選ばれている上質バッグ", image: "" },
-        { id: "rank_wallet", label: "財布部門 人気TOP3", hint: "機能美を極めたコンパクトウォレット", image: "" }
-      ];
-    }
-    if (state.step === "sub_category") {
-      return state.selectedPurposeCategories || [];
-    }
-    if (state.step === "budget") {
+    if (state.step === "budget_select" || state.step === "budget") {
       return BUDGET_OPTIONS;
     }
     if (state.step === "done") {
@@ -539,21 +514,42 @@
     state.selectedAction = action;
     state.productOffset = 0;
 
+    const navSetting = config.navSettings[action];
+    const pid = navSetting?.purposeId;
+
+    if (pid && pid.trim() !== "") {
+      const foundPurpose = config.purposes.find(p => p.id === pid);
+      if (foundPurpose && foundPurpose.categories && foundPurpose.categories.length > 0) {
+        state.step = "sub_category";
+        state.currentSubOptions = foundPurpose.categories.map(c => ({
+          id: c.id, label: c.label, hint: c.hint, image: c.image || ""
+        }));
+        messages.push({ role: "user", text: navSetting.label });
+        messages.push({ role: "concierge", text: `${foundPurpose.label}のカテゴリをお選びください。` });
+        render();
+        return;
+      }
+    }
+
     if (action === "ranking") {
-      state.step = "ranking_select";
-      messages.push({ role: "user", text: config.navSettings.ranking.label });
+      state.step = "sub_category";
+      state.currentSubOptions = [
+        { id: "rank_bag", label: "バッグ部門 人気TOP3", hint: "今最も選ばれている上質バッグ", image: "" },
+        { id: "rank_wallet", label: "財布部門 人気TOP3", hint: "機能美を極めたコンパクトウォレット", image: "" }
+      ];
+      messages.push({ role: "user", text: navSetting?.label || "ランキング" });
       messages.push({ role: "concierge", text: "人気のランキング部門をお選びください。" });
     } else if (action === "category") {
       state.step = "category_select";
-      messages.push({ role: "user", text: config.navSettings.category.label });
+      messages.push({ role: "user", text: navSetting?.label || "カテゴリ" });
       messages.push({ role: "concierge", text: "お探しのカテゴリーをお選びください。" });
     } else if (action === "material") {
-      state.step = "material_select";
-      messages.push({ role: "user", text: config.navSettings.material.label });
-      messages.push({ role: "concierge", text: "気になる素材やご用途をお選びください。" });
+      state.step = "category_select";
+      messages.push({ role: "user", text: navSetting?.label || "素材" });
+      messages.push({ role: "concierge", text: "お探しの素材・カテゴリーをお選びください。" });
     } else if (action === "budget") {
       state.step = "budget_select";
-      messages.push({ role: "user", text: config.navSettings.budget.label });
+      messages.push({ role: "user", text: navSetting?.label || "金額" });
       messages.push({ role: "concierge", text: "ご予算の目安をお選びください。" });
     }
     render();
@@ -603,50 +599,47 @@
     if (state.step === "purpose") {
       const purpose = config.purposes.find(p => p.id === id);
       if (!purpose) return;
-      state.selectedPurposeCategories = purpose.categories;
       state.step = "sub_category";
+      state.currentSubOptions = (purpose.categories || []).map(c => ({
+        id: c.id, label: c.label, hint: c.hint, image: c.image || ""
+      }));
       messages.push({ role: "user", text: purpose.label, image: purpose.image || "" });
       messages.push({ role: "concierge", text: `${purpose.label}ですね。詳細なカテゴリーをお選びください。` });
 
-    } else if (state.step === "ranking_select") {
-      const isBag = id === "rank_bag";
-      messages.push({ role: "user", text: isBag ? "バッグ部門 人気TOP3" : "財布部門 人気TOP3" });
-      const matched = PRODUCTS.slice(0, 3);
-      state.step = "done";
-      messages.push({
-        role: "concierge",
-        text: "今週特に人気の高かったおすすめアイテムTOP3です。",
-        products: matched
-      });
+    } else if (state.step === "sub_category") {
+      if (id === "rank_bag" || id === "rank_wallet") {
+        const isBag = id === "rank_bag";
+        messages.push({ role: "user", text: isBag ? "バッグ部門 人気TOP3" : "財布部門 人気TOP3" });
+        const matched = PRODUCTS.slice(0, 3);
+        state.step = "done";
+        messages.push({
+          role: "concierge",
+          text: "今週特に人気の高かったおすすめアイテムTOP3です。",
+          products: matched
+        });
+      } else {
+        let foundCat = null;
+        config.purposes.forEach(p => {
+          const c = (p.categories || []).find(cat => cat.id === id);
+          if (c) foundCat = c;
+        });
+        if (!foundCat) return;
+        state.selectedCategory = foundCat;
+        state.step = "budget";
+        messages.push({ role: "user", text: foundCat.label, image: foundCat.image || "" });
+        messages.push({ role: "concierge", text: `${foundCat.label}ですね。ご予算の目安をお選びください。` });
+      }
+
     } else if (state.step === "category_select") {
       let foundCat = null;
       config.purposes.forEach(p => {
-        const c = p.categories.find(cat => cat.id === id);
+        const c = (p.categories || []).find(cat => cat.id === id);
         if (c) foundCat = c;
       });
       if (!foundCat) return;
       state.selectedCategory = foundCat;
       state.step = "budget";
-      messages.push({ role: "user", text: foundCat.label });
-      messages.push({ role: "concierge", text: `${foundCat.label}ですね。ご予算の目安をお選びください。` });
-
-    } else if (state.step === "material_select") {
-      const purpose = config.purposes.find(p => p.id === id);
-      if (!purpose) return;
-      state.selectedPurposeCategories = purpose.categories;
-      state.step = "sub_category";
-      messages.push({ role: "user", text: purpose.label });
-      messages.push({ role: "concierge", text: `${purpose.label}に該当する詳細カテゴリをお選びください。` });
-
-    } else if (state.step === "sub_category") {
-      let foundCat = null;
-      if (state.selectedPurposeCategories) {
-        foundCat = state.selectedPurposeCategories.find(c => c.id === id);
-      }
-      if (!foundCat) return;
-      state.selectedCategory = foundCat;
-      state.step = "budget";
-      messages.push({ role: "user", text: foundCat.label });
+      messages.push({ role: "user", text: foundCat.label, image: foundCat.image || "" });
       messages.push({ role: "concierge", text: `${foundCat.label}ですね。ご予算の目安をお選びください。` });
 
     } else if (state.step === "budget_select" || state.step === "budget") {
@@ -670,8 +663,8 @@
     state.step = "purpose";
     state.selectedAction = null;
     state.selectedCategory = null;
-    state.selectedType = null;
     state.selectedBudget = null;
+    state.currentSubOptions = [];
     messages = [{ role: "concierge", text: config.greeting }];
     render();
   }
