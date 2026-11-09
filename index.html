@@ -240,7 +240,7 @@
     padding: 8px 12px;
     gap: 6px;
     z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(43, 37, 32, 0.05);
+    box-shadow: -4px 20px rgba(43, 37, 32, 0.05);
   }
   .nav-btn {
     background: transparent;
@@ -519,13 +519,13 @@
 
     if (pid && pid.trim() !== "") {
       const foundPurpose = config.purposes.find(p => p.id === pid);
-      if (foundPurpose && foundPurpose.categories && foundPurpose.categories.length > 0) {
+      if (foundPurpose) {
         state.step = "sub_category";
-        state.currentSubOptions = foundPurpose.categories.map(c => ({
+        state.currentSubOptions = (foundPurpose.categories || []).map(c => ({
           id: c.id, label: c.label, hint: c.hint, image: c.image || ""
         }));
-        messages.push({ role: "user", text: navSetting.label });
-        messages.push({ role: "concierge", text: `${foundPurpose.label}のカテゴリをお選びください。` });
+        messages.push({ role: "user", text: navSetting.label, image: foundPurpose.image || "" });
+        messages.push({ role: "concierge", text: `${foundPurpose.label}ですね。詳細なカテゴリーをお選びください。` });
         render();
         return;
       }
