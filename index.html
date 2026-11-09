@@ -275,12 +275,11 @@
     purposes: customConfig.purposes || []
   };
 
-  // ユーザー向け価格帯選択肢定義
   const BUDGET_OPTIONS = [
     { id: "all", label: "指定なし（全価格帯）", hint: "価格にこだわらずおすすめを見る", min: 0, max: 9999999 },
     { id: "low", label: "〜 20,000円", hint: "手軽な革小物やコンパクトアイテム", min: 0, max: 20000 },
     { id: "mid", label: "20,000円 〜 50,000円", hint: "本格的なお財布やスマートバッグ", min: 20001, max: 50000 },
-    { id: "high", label: "50,000円 〜", hint: "ワンランク上のプレミアムレザーバッグ", min: 50001, max: 9999999 }
+    { id: "high", label: "50,000円 〜", hint: "ワンランク上のプレミアムレザー", min: 50001, max: 9999999 }
   ];
 
   const brandContainer = document.getElementById("brandContainer");
@@ -413,9 +412,8 @@
       const keywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
       const requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
       
-      // ユーザーの選択予算を反映（なければCSVの基本設定）
-      const minPrice = budget ? budget.min : (category.minPrice ?? 0);
-      const maxPrice = budget ? budget.max : (category.maxPrice ?? 9999999);
+      const minPrice = budget ? budget.min : 0;
+      const maxPrice = budget ? budget.max : 9999999;
       const sortBy = category.sortBy || "price_desc";
 
       let candidates = PRODUCTS.filter(p => {
@@ -439,7 +437,6 @@
         candidates.sort((a, b) => b.tags.length - a.tags.length);
       }
 
-      // 候補が足りない時の予算緩和フォールバック
       if (candidates.length < 3 && budget && budget.id !== "all") {
         const fallbackCandidates = PRODUCTS.filter(p => {
           if (requiredTags.length > 0 && !requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)))) return false;
@@ -482,7 +479,6 @@
 
       messages.push({ role: "user", text: category.label });
 
-      // お問い合わせ・FAQなどの静的ページ指定の場合は予算を聞かずに即案内
       if (category.mode === "manual" || state.selectedPurpose.id === "support") {
         state.step = "done";
         const matched = getMatchedProducts(category, null);
@@ -492,7 +488,6 @@
           products: matched
         });
       } else {
-        // 商品検索の場合は予算ヒアリングへ進む
         state.step = "budget";
         messages.push({ role: "concierge", text: `${category.label}ですね。ご予算の目安をお選びください。` });
       }
