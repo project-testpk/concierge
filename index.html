@@ -176,12 +176,17 @@
   .choice strong { display: block; font-weight: 500; font-size: 12px; letter-spacing: 0.03em; }
   .choice span { display: block; margin-top: 2px; color: var(--color-muted); font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
+  /* ランキング用グリッド（複数商品表示） */
   .products {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
     margin-top: 12px;
   }
+  @media (min-width: 600px) {
+    .products { grid-template-columns: repeat(3, 1fr); }
+  }
+
   .card {
     background: var(--color-surface);
     border: 1px solid var(--color-line);
@@ -205,10 +210,10 @@
   }
   .card-img-placeholder svg { width: 28px; height: 28px; fill: currentColor; opacity: 0.6; }
 
-  .card-body { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card-body { padding: 10px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
   .card-cat { margin: 0; font-size: 8px; letter-spacing: 0.2em; color: var(--color-accent); text-transform: uppercase; }
-  .card h3 { margin: 0; font-size: 12px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .price { margin: 0; font-size: 11px; font-weight: 500; color: var(--color-main); }
+  .card h3 { margin: 0; font-size: 11px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .price { margin: 0; font-size: 10px; font-weight: 500; color: var(--color-main); }
   .product-link {
     margin-top: 6px;
     display: inline-flex;
@@ -219,13 +224,54 @@
     background: var(--color-main);
     color: #fff;
     border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 10px;
+    padding: 5px 8px;
+    font-size: 9px;
     letter-spacing: 0.06em;
     transition: opacity 0.2s;
   }
-  .product-link svg { width: 10px; height: 10px; fill: currentColor; }
+  .product-link svg { width: 9px; height: 9px; fill: currentColor; }
   .product-link:hover { opacity: 0.9; }
+
+  /* もっと見るボタン */
+  .more-link {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    background: #ffffff;
+    color: var(--color-main);
+    border: 1px solid var(--color-main);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+  }
+  .more-link svg { width: 14px; height: 14px; fill: currentColor; }
+  .more-link:hover { background: var(--color-main); color: #fff; }
+
+  .same-material-link {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    background: #ffffff;
+    color: var(--color-main);
+    border: 1px solid var(--color-main);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+  }
+  .same-material-link svg { width: 14px; height: 14px; fill: currentColor; }
+  .same-material-link:hover { background: var(--color-main); color: #fff; }
 
   .floating-nav {
     position: fixed;
@@ -240,7 +286,7 @@
     padding: 8px 12px;
     gap: 6px;
     z-index: 1000;
-    box-shadow: -4px 20px rgba(43, 37, 32, 0.05);
+    box-shadow: 0 -4px 20px rgba(43, 37, 32, 0.05);
   }
   .nav-btn {
     background: transparent;
@@ -272,7 +318,6 @@
 
   @media (max-width: 768px) {
     .app { padding: 16px 12px 90px 12px; }
-    .products { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -420,6 +465,13 @@
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
         const targetUrl = config.navSettings[action]?.url;
+        
+        // ランキングの場合はURL直飛びせずウィジェット内でブロック表示する
+        if (action === "ranking") {
+          handleNavClick(action);
+          return;
+        }
+
         if (targetUrl && targetUrl.trim() !== "") {
           window.open(targetUrl, "_blank");
         } else {
@@ -456,6 +508,18 @@
               </div>
             `).join('')}
           </div>
+          ${m.moreUrl ? `
+            <a class="more-link" href="${m.moreUrl}" target="_blank">
+              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              もっと見る
+            </a>
+          ` : ''}
+          ${m.sameMaterialUrl ? `
+            <a class="same-material-link" href="${m.sameMaterialUrl}" target="_blank">
+              <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+              同じ素材の商品一覧はこちら
+            </a>
+          ` : ''}
         ` : ''}
       </div>
     `).join('');
@@ -515,7 +579,31 @@
     state.productOffset = 0;
 
     const navSetting = config.navSettings[action];
-    const pid = navSetting?.purposeId;
+    let pid = navSetting?.purposeId;
+
+    if (!pid || pid.trim() === "") {
+      if (action === "material") pid = "material";
+    }
+
+    if (action === "ranking") {
+      state.step = "done";
+      // 上位品番を抽出（最大10商品：5*2構成）
+      const rankingProducts = PRODUCTS.slice(0, 10);
+      const rankingUrl = navSetting?.url || "";
+      
+      messages = [
+        { role: "concierge", text: config.greeting },
+        { role: "user", text: navSetting?.label || "ランキング" },
+        { 
+          role: "concierge", 
+          text: "今週の人気上位アイテムです。", 
+          products: rankingProducts,
+          moreUrl: rankingUrl 
+        }
+      ];
+      render();
+      return;
+    }
 
     if (pid && pid.trim() !== "") {
       const foundPurpose = config.purposes.find(p => p.id === pid);
@@ -524,33 +612,37 @@
         state.currentSubOptions = (foundPurpose.categories || []).map(c => ({
           id: c.id, label: c.label, hint: c.hint, image: c.image || ""
         }));
-        messages.push({ role: "user", text: navSetting.label, image: foundPurpose.image || "" });
-        messages.push({ role: "concierge", text: `${foundPurpose.label}ですね。詳細なカテゴリーをお選びください。` });
+        messages = [
+          { role: "concierge", text: config.greeting },
+          { role: "user", text: navSetting?.label || action, image: foundPurpose.image || "" },
+          { role: "concierge", text: `${foundPurpose.label}ですね。詳細なカテゴリーをお選びください。` }
+        ];
         render();
         return;
       }
     }
 
-    if (action === "ranking") {
-      state.step = "sub_category";
-      state.currentSubOptions = [
-        { id: "rank_bag", label: "バッグ部門 人気TOP3", hint: "今最も選ばれている上質バッグ", image: "" },
-        { id: "rank_wallet", label: "財布部門 人気TOP3", hint: "機能美を極めたコンパクトウォレット", image: "" }
-      ];
-      messages.push({ role: "user", text: navSetting?.label || "ランキング" });
-      messages.push({ role: "concierge", text: "人気のランキング部門をお選びください。" });
-    } else if (action === "category") {
+    if (action === "category") {
       state.step = "category_select";
-      messages.push({ role: "user", text: navSetting?.label || "カテゴリ" });
-      messages.push({ role: "concierge", text: "お探しのカテゴリーをお選びください。" });
+      messages = [
+        { role: "concierge", text: config.greeting },
+        { role: "user", text: navSetting?.label || "カテゴリ" },
+        { role: "concierge", text: "お探しのカテゴリーをお選びください。" }
+      ];
     } else if (action === "material") {
       state.step = "category_select";
-      messages.push({ role: "user", text: navSetting?.label || "素材" });
-      messages.push({ role: "concierge", text: "お探しの素材・カテゴリーをお選びください。" });
+      messages = [
+        { role: "concierge", text: config.greeting },
+        { role: "user", text: navSetting?.label || "素材" },
+        { role: "concierge", text: "お探しの素材・カテゴリーをお選びください。" }
+      ];
     } else if (action === "budget") {
       state.step = "budget_select";
-      messages.push({ role: "user", text: navSetting?.label || "金額" });
-      messages.push({ role: "concierge", text: "ご予算の目安をお選びください。" });
+      messages = [
+        { role: "concierge", text: config.greeting },
+        { role: "user", text: navSetting?.label || "金額" },
+        { role: "concierge", text: "ご予算の目安をお選びください。" }
+      ];
     }
     render();
   }
@@ -601,7 +693,7 @@
       if (!purpose) return;
       state.step = "sub_category";
       state.currentSubOptions = (purpose.categories || []).map(c => ({
-        id: c.id, label: c.label, hint: c.hint, image: c.image || ""
+        id: c.id, label: c.label, hint: c.hint, image: c.image || "", sameMaterialUrl: c.sameMaterialUrl || ""
       }));
       messages.push({ role: "user", text: purpose.label, image: purpose.image || "" });
       messages.push({ role: "concierge", text: `${purpose.label}ですね。詳細なカテゴリーをお選びください。` });
@@ -650,10 +742,13 @@
 
       messages.push({ role: "user", text: budget.label });
       const matched = getMatchedProducts(state.selectedCategory, budget);
+      const sameMatUrl = state.selectedCategory?.sameMaterialUrl || "";
+
       messages.push({
         role: "concierge",
         text: matched.length > 0 ? `ご条件に合うおすすめの逸品を厳選いたしました。` : `条件に合う商品が見つかりませんでした。`,
-        products: matched
+        products: matched,
+        sameMaterialUrl: sameMatUrl
       });
     }
     render();

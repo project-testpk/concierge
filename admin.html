@@ -29,7 +29,7 @@
     color: var(--color-text);
     line-height: 1.6;
   }
-  .wrap { max-width: 1000px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
+  .wrap { max-width: 1050px; margin: 0 auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
   h1 { margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--color-line); padding-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
   .section { margin-top: 32px; border-top: 1px solid var(--color-line); padding-top: 24px; }
   .section h2 { font-size: 15px; color: var(--color-main); margin-bottom: 16px; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
@@ -48,7 +48,6 @@
   }
   .card-header { font-weight: 700; font-size: 13px; color: var(--color-main-deep); margin-bottom: 8px; }
 
-  /* スプレッドシート風テーブルスタイル */
   .spreadsheet-container {
     width: 100%;
     overflow-x: auto;
@@ -134,9 +133,6 @@
   .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .note { font-size: 12px; color: var(--color-muted); line-height: 1.6; margin-top: 4px; }
   
-  .csv-guide-box { background: #f4f0eb; border: 1px solid var(--color-line); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 12px; }
-  .csv-guide-box code { background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-line); color: var(--color-main); }
-  
   @media (min-width: 768px) {
     .grid-4 { grid-template-columns: repeat(4, 1fr); }
   }
@@ -146,7 +142,7 @@
   <div class="wrap">
     <h1>
       コンシェルジュ 運用管理パネル
-      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">メニュー・目的グループ紐づけ対応</span>
+      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">ランキング「もっと見る」対応</span>
     </h1>
     <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面（index.html）へ即時反映されます。</p>
 
@@ -190,14 +186,14 @@
 
     <div class="section">
       <h2>3. 下部フローティングナビゲーション設定</h2>
-      <p class="note">各ボタンのテキスト、外部URL（空欄なら対話起動）、そして<strong>「タップ時にどの目的グループを表示するか（purpose_id）」</strong>を紐づけできます。</p>
+      <p class="note">「ランキング」の外部URLを設定すると、ウィジェット内の「もっと見る」ボタンを押したときのリンク先になります。</p>
       
       <div class="grid-4" style="margin-top: 16px;">
         <div class="nav-card">
           <div class="card-header">ランキング</div>
           <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_ranking" value="ランキング"></label>
           <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_ranking" placeholder="例: rank"></label>
-          <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_ranking" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:6px;">もっと見るURL <input type="url" id="nav_url_ranking" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_ranking"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
         <div class="nav-card">
@@ -210,7 +206,7 @@
         <div class="nav-card">
           <div class="card-header">素材</div>
           <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_material" value="素材"></label>
-          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_material" placeholder="例: material"></label>
+          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_material" value="material"></label>
           <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_material" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_material"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
@@ -226,17 +222,11 @@
 
     <div class="section">
       <h2>4. 階層・レコメンド設定のCSV一括登録 / エクスポート</h2>
-      <div class="csv-guide-box">
-        <strong>📋 CSVの書き方・ルール</strong>
-        <ul style="margin: 8px 0 0 20px; padding: 0; line-height: 1.7;">
-          <li>1行目はヘッダーとしてそのまま残してください。</li>
-        </ul>
-        <div style="margin-top: 10px; display: flex; gap: 10px;">
-          <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSV</button>
-          <button class="btn-secondary" type="button" id="exportCsvBtn">📤 CSV書き出し</button>
-        </div>
+      <div style="margin-top: 10px; display: flex; gap: 10px;">
+        <button class="btn-secondary" type="button" id="downloadCsvSampleBtn">📥 サンプルCSV</button>
+        <button class="btn-secondary" type="button" id="exportCsvBtn">📤 CSV書き出し</button>
       </div>
-      <label class="field">CSVアップロード
+      <label class="field" style="margin-top: 12px;">CSVアップロード
         <input type="file" id="csvFileInput" accept=".csv" style="padding: 10px; background: #fff;">
       </label>
       <p id="csvMsg" style="font-size: 12px; color: #4a7c59; font-weight: 500; margin-top: 4px;"></p>
@@ -247,7 +237,6 @@
         5. ツリー階層・レコメンド一覧管理
         <button class="btn-secondary" type="button" id="addRowBtn">+ 行を追加</button>
       </h2>
-      <p class="note">ここで設定した <code>purpose_id</code> を上記のナビゲーション設定（例: <code>material</code>）と一致させることで、ボタンタップ時にそのグループのカードが表示されます。</p>
       
       <div class="spreadsheet-container">
         <table class="spreadsheet-table">
@@ -264,6 +253,7 @@
               <th>キーワード / URL</th>
               <th>Shopifyタグ</th>
               <th>最低価格</th>
+              <th>同じ素材の商品URL (任意)</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -295,38 +285,7 @@
       material: { label: "素材", purposeId: "material", url: "", show: true },
       budget: { label: "金額", purposeId: "", url: "", show: true }
     },
-    purposes: [
-      {
-        id: "material",
-        label: "素材から選ぶ",
-        hint: "ヴィンテージ＆ヴァイカウントレザーの質感から選ぶ",
-        image: "",
-        categories: [
-          {
-            id: "vintage",
-            label: "ヴィンテージレザー製品",
-            hint: "味わい深い風合いと経年変化を楽しめる上質な革",
-            image: "",
-            mode: "dynamic",
-            keywords: "ヴィンテージ",
-            tags: "",
-            minPrice: 0,
-            maxPrice: 9999999
-          },
-          {
-            id: "vicount",
-            label: "ヴァイカウントレザー製品",
-            hint: "重厚感のある光沢と深みが魅力のプレミアム革",
-            image: "",
-            mode: "dynamic",
-            keywords: "ヴァイカウント",
-            tags: "",
-            minPrice: 0,
-            maxPrice: 9999999
-          }
-        ]
-      }
-    ]
+    purposes: []
   };
 
   const saved = JSON.parse(localStorage.getItem("concierge_config") || "null") || defaultData;
@@ -368,7 +327,7 @@
 
     currentPurposes.forEach((p, pIdx) => {
       if (!p.categories || p.categories.length === 0) {
-        appendRow(tbody, pIdx, -1, p, { id: "", label: "", image: "", mode: "dynamic", keywords: "", manualUrls: ["","",""], tags: "", minPrice: 0 });
+        appendRow(tbody, pIdx, -1, p, { id: "", label: "", image: "", mode: "dynamic", keywords: "", manualUrls: ["","",""], tags: "", minPrice: 0, sameMaterialUrl: "" });
       } else {
         p.categories.forEach((c, cIdx) => {
           appendRow(tbody, pIdx, cIdx, p, c);
@@ -399,6 +358,7 @@
       <td><input type="text" class="r-c-kw" value="${keywordOrUrlVal}" data-p="${pIdx}" data-c="${cIdx}" placeholder="${isManual ? '商品URL' : 'キーワード'}" style="width:150px;"></td>
       <td><input type="text" class="r-c-tags" value="${c.tags || ''}" data-p="${pIdx}" data-c="${cIdx}" style="width:100px;"></td>
       <td><input type="text" class="r-c-min" value="${c.minPrice ?? 0}" data-p="${pIdx}" data-c="${cIdx}" style="width:70px;"></td>
+      <td><input type="url" class="r-c-samemat" value="${c.sameMaterialUrl || ''}" data-p="${pIdx}" data-c="${cIdx}" placeholder="https://..." style="width:160px;"></td>
       <td><button class="btn-danger" type="button" onclick="deleteRow(${pIdx}, ${cIdx})">削除</button></td>
     `;
     tbody.appendChild(tr);
@@ -430,6 +390,7 @@
       }
       if (t.classList.contains("r-c-tags")) cat.tags = t.value;
       if (t.classList.contains("r-c-min")) cat.minPrice = parseInt(t.value) || 0;
+      if (t.classList.contains("r-c-samemat")) cat.sameMaterialUrl = t.value;
     }
   });
 
@@ -458,7 +419,8 @@
       tags: "",
       minPrice: 0,
       maxPrice: 9999999,
-      sortBy: "price_desc"
+      sortBy: "price_desc",
+      sameMaterialUrl: ""
     });
     renderSpreadsheet();
   };
@@ -476,38 +438,6 @@
   };
 
   document.getElementById("addRowBtn").addEventListener("click", addRow);
-
-  document.getElementById("exportCsvBtn").addEventListener("click", () => {
-    let csvRows = [];
-    csvRows.push([
-      "purpose_id", "purpose_label", "purpose_hint", "purpose_image",
-      "category_id", "category_label", "category_hint", "category_image",
-      "mode", "url_1", "url_2", "url_3",
-      "keywords", "tags", "min_price", "max_price", "sort_by"
-    ].join(","));
-
-    currentPurposes.forEach(p => {
-      p.categories.forEach(c => {
-        const urls = c.manualUrls || ["", "", ""];
-        csvRows.push([
-          p.id, `"${p.label}"`, `"${p.hint || ''}"`, `"${p.image || ''}"`,
-          c.id, `"${c.label}"`, `"${c.hint || ''}"`, `"${c.image || ''}"`,
-          c.mode || "dynamic",
-          `"${urls[0] || ''}"`, `"${urls[1] || ''}"`, `"${urls[2] || ''}"`,
-          `"${c.keywords || ''}"`, `"${c.tags || ''}"`,
-          c.minPrice ?? 0, c.maxPrice ?? 9999999, c.sortBy || "price_desc"
-        ].join(","));
-      });
-    });
-
-    const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "concierge_settings.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
 
   document.getElementById("saveBtn").addEventListener("click", () => {
     const config = {
