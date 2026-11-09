@@ -146,7 +146,7 @@
   <div class="wrap">
     <h1>
       コンシェルジュ 運用管理パネル
-      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">スプレッドシート風一覧管理</span>
+      <span style="font-size: 11px; color: var(--color-muted); font-weight: normal;">メニュー・目的グループ紐づけ対応</span>
     </h1>
     <p class="note">設定はブラウザのlocalStorageに保存され、お客様画面（index.html）へ即時反映されます。</p>
 
@@ -190,29 +190,35 @@
 
     <div class="section">
       <h2>3. 下部フローティングナビゲーション設定</h2>
+      <p class="note">各ボタンのテキスト、外部URL（空欄なら対話起動）、そして<strong>「タップ時にどの目的グループを表示するか（purpose_id）」</strong>を紐づけできます。</p>
+      
       <div class="grid-4" style="margin-top: 16px;">
         <div class="nav-card">
           <div class="card-header">ランキング</div>
-          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_ranking" value="ランキング"></label>
-          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_ranking" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_ranking" value="ランキング"></label>
+          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_ranking" placeholder="例: rank"></label>
+          <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_ranking" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_ranking"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
         <div class="nav-card">
           <div class="card-header">カテゴリ</div>
-          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_category" value="カテゴリ"></label>
-          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_category" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_category" value="カテゴリ"></label>
+          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_category" placeholder="例: category"></label>
+          <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_category" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_category"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
         <div class="nav-card">
           <div class="card-header">素材</div>
-          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_material" value="素材"></label>
-          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_material" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_material" value="素材"></label>
+          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_material" placeholder="例: material"></label>
+          <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_material" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_material"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
         <div class="nav-card">
           <div class="card-header">金額</div>
-          <label class="field" style="margin-bottom:8px;">テキスト <input type="text" id="nav_label_budget" value="金額"></label>
-          <label class="field" style="margin-bottom:8px;">外部URL <input type="url" id="nav_url_budget" placeholder="https://..."></label>
+          <label class="field" style="margin-bottom:6px;">テキスト <input type="text" id="nav_label_budget" value="金額"></label>
+          <label class="field" style="margin-bottom:6px;">紐づく目的ID <input type="text" id="nav_purpose_budget" placeholder="例: budget"></label>
+          <label class="field" style="margin-bottom:6px;">外部URL <input type="url" id="nav_url_budget" placeholder="https://..."></label>
           <label class="field" style="margin-bottom:0;">状態 <select id="nav_show_budget"><option value="true">表示</option><option value="false">非表示</option></select></label>
         </div>
       </div>
@@ -236,13 +242,12 @@
       <p id="csvMsg" style="font-size: 12px; color: #4a7c59; font-weight: 500; margin-top: 4px;"></p>
     </div>
 
-    <!-- 5. スプレッドシート風 一覧テーブル -->
     <div class="section">
       <h2>
         5. ツリー階層・レコメンド一覧管理
         <button class="btn-secondary" type="button" id="addRowBtn">+ 行を追加</button>
       </h2>
-      <p class="note">スプレッドシートのように横並びで効率よく編集できます。</p>
+      <p class="note">ここで設定した <code>purpose_id</code> を上記のナビゲーション設定（例: <code>material</code>）と一致させることで、ボタンタップ時にそのグループのカードが表示されます。</p>
       
       <div class="spreadsheet-container">
         <table class="spreadsheet-table">
@@ -285,30 +290,39 @@
     mainColor: "#6e5340",
     shopifyDomain: "https://daysart-classic.com",
     navSettings: {
-      ranking: { label: "ランキング", show: true, url: "" },
-      category: { label: "カテゴリ", show: true, url: "" },
-      material: { label: "素材", show: true, url: "" },
-      budget: { label: "金額", show: true, url: "" }
+      ranking: { label: "ランキング", purposeId: "", url: "", show: true },
+      category: { label: "カテゴリ", purposeId: "", url: "", show: true },
+      material: { label: "素材", purposeId: "material", url: "", show: true },
+      budget: { label: "金額", purposeId: "", url: "", show: true }
     },
     purposes: [
       {
-        id: "self",
-        label: "ご自身用（普段使い・通勤）",
-        hint: "日々の暮らしや仕事に寄り添う一品",
+        id: "material",
+        label: "素材から選ぶ",
+        hint: "ヴィンテージ＆ヴァイカウントレザーの質感から選ぶ",
         image: "",
         categories: [
           {
-            id: "bag",
-            label: "バッグ（トート・ショルダー）",
-            hint: "",
+            id: "vintage",
+            label: "ヴィンテージレザー製品",
+            hint: "味わい深い風合いと経年変化を楽しめる上質な革",
             image: "",
             mode: "dynamic",
-            manualUrls: ["", "", ""],
-            keywords: "バッグ, トート",
+            keywords: "ヴィンテージ",
             tags: "",
             minPrice: 0,
-            maxPrice: 9999999,
-            sortBy: "price_desc"
+            maxPrice: 9999999
+          },
+          {
+            id: "vicount",
+            label: "ヴァイカウントレザー製品",
+            hint: "重厚感のある光沢と深みが魅力のプレミアム革",
+            image: "",
+            mode: "dynamic",
+            keywords: "ヴァイカウント",
+            tags: "",
+            minPrice: 0,
+            maxPrice: 9999999
           }
         ]
       }
@@ -327,31 +341,33 @@
 
   const navs = saved.navSettings || defaultData.navSettings;
   document.getElementById("nav_label_ranking").value = navs.ranking?.label || "ランキング";
+  document.getElementById("nav_purpose_ranking").value = navs.ranking?.purposeId || "";
   document.getElementById("nav_url_ranking").value = navs.ranking?.url || "";
   document.getElementById("nav_show_ranking").value = String(navs.ranking?.show !== false);
 
   document.getElementById("nav_label_category").value = navs.category?.label || "カテゴリ";
+  document.getElementById("nav_purpose_category").value = navs.category?.purposeId || "";
   document.getElementById("nav_url_category").value = navs.category?.url || "";
   document.getElementById("nav_show_category").value = String(navs.category?.show !== false);
 
   document.getElementById("nav_label_material").value = navs.material?.label || "素材";
+  document.getElementById("nav_purpose_material").value = navs.material?.purposeId || "material";
   document.getElementById("nav_url_material").value = navs.material?.url || "";
   document.getElementById("nav_show_material").value = String(navs.material?.show !== false);
 
   document.getElementById("nav_label_budget").value = navs.budget?.label || "金額";
+  document.getElementById("nav_purpose_budget").value = navs.budget?.purposeId || "";
   document.getElementById("nav_url_budget").value = navs.budget?.url || "";
   document.getElementById("nav_show_budget").value = String(navs.budget?.show !== false);
 
   let currentPurposes = saved.purposes || defaultData.purposes;
 
-  // 階層データをスプレッドシート用のフラットな配列に変換して描画
   function renderSpreadsheet() {
     const tbody = document.getElementById("spreadsheetBody");
     tbody.innerHTML = "";
 
     currentPurposes.forEach((p, pIdx) => {
       if (!p.categories || p.categories.length === 0) {
-        // カテゴリが0件の場合の空行
         appendRow(tbody, pIdx, -1, p, { id: "", label: "", image: "", mode: "dynamic", keywords: "", manualUrls: ["","",""], tags: "", minPrice: 0 });
       } else {
         p.categories.forEach((c, cIdx) => {
@@ -388,7 +404,6 @@
     tbody.appendChild(tr);
   }
 
-  // 入力時の即時データ反映
   document.addEventListener("input", (e) => {
     const t = e.target;
     const pIdx = t.dataset.p;
@@ -429,7 +444,6 @@
   });
 
   window.addRow = function() {
-    // 最初の目的に新規カテゴリ行を追加、目的がなければ新規目的を作る
     if (currentPurposes.length === 0) {
       currentPurposes.push({ id: "purpose_" + Date.now(), label: "新規目的", hint: "", image: "", categories: [] });
     }
@@ -463,7 +477,6 @@
 
   document.getElementById("addRowBtn").addEventListener("click", addRow);
 
-  // --- CSV エクスポート ---
   document.getElementById("exportCsvBtn").addEventListener("click", () => {
     let csvRows = [];
     csvRows.push([
@@ -496,7 +509,6 @@
     URL.revokeObjectURL(url);
   });
 
-  // 保存ボタン
   document.getElementById("saveBtn").addEventListener("click", () => {
     const config = {
       brandName: document.getElementById("brandName").value,
@@ -507,10 +519,10 @@
       mainColor: document.getElementById("mainColor").value,
       shopifyDomain: document.getElementById("shopifyDomain").value,
       navSettings: {
-        ranking: { label: document.getElementById("nav_label_ranking").value, url: document.getElementById("nav_url_ranking").value, show: document.getElementById("nav_show_ranking").value === "true" },
-        category: { label: document.getElementById("nav_label_category").value, url: document.getElementById("nav_url_category").value, show: document.getElementById("nav_show_category").value === "true" },
-        material: { label: document.getElementById("nav_label_material").value, url: document.getElementById("nav_url_material").value, show: document.getElementById("nav_show_material").value === "true" },
-        budget: { label: document.getElementById("nav_label_budget").value, url: document.getElementById("nav_url_budget").value, show: document.getElementById("nav_show_budget").value === "true" }
+        ranking: { label: document.getElementById("nav_label_ranking").value, purposeId: document.getElementById("nav_purpose_ranking").value, url: document.getElementById("nav_url_ranking").value, show: document.getElementById("nav_show_ranking").value === "true" },
+        category: { label: document.getElementById("nav_label_category").value, purposeId: document.getElementById("nav_purpose_category").value, url: document.getElementById("nav_url_category").value, show: document.getElementById("nav_show_category").value === "true" },
+        material: { label: document.getElementById("nav_label_material").value, purposeId: document.getElementById("nav_purpose_material").value, url: document.getElementById("nav_url_material").value, show: document.getElementById("nav_show_material").value === "true" },
+        budget: { label: document.getElementById("nav_label_budget").value, purposeId: document.getElementById("nav_purpose_budget").value, url: document.getElementById("nav_url_budget").value, show: document.getElementById("nav_show_budget").value === "true" }
       },
       purposes: currentPurposes
     };
