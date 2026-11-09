@@ -262,7 +262,6 @@
   </div>
 
 <script>
-  // localStorage から管理画面の設定を読み込み（ない場合はデフォルト値）
   const customConfig = JSON.parse(localStorage.getItem("concierge_config") || "{}");
   
   const config = {
@@ -276,7 +275,14 @@
     purposes: customConfig.purposes || []
   };
 
-  // ブランディングの反映
+  // ユーザー向け価格帯選択肢定義
+  const BUDGET_OPTIONS = [
+    { id: "all", label: "指定なし（全価格帯）", hint: "価格にこだわらずおすすめを見る", min: 0, max: 9999999 },
+    { id: "low", label: "〜 20,000円", hint: "手軽な革小物やコンパクトアイテム", min: 0, max: 20000 },
+    { id: "mid", label: "20,000円 〜 50,000円", hint: "本格的なお財布やスマートバッグ", min: 20001, max: 50000 },
+    { id: "high", label: "50,000円 〜", hint: "ワンランク上のプレミアムレザーバッグ", min: 50001, max: 9999999 }
+  ];
+
   const brandContainer = document.getElementById("brandContainer");
   if (config.logoUrl) {
     let filterClass = "";
@@ -297,14 +303,14 @@
   let PRODUCTS = [];
   let messages = [{ role: "concierge", text: config.greeting }];
   
-  // 対話の状態管理（目的 -> カテゴリ -> 結果）
   const state = {
-    step: "purpose",       // "purpose" | "category" | "done"
-    selectedPurpose: null, // 選択された目的オブジェクト
-    selectedCategory: null // 選択されたカテゴリオブジェクト
+    step: "purpose",       // "purpose" | "category" | "budget" | "done"
+    selectedPurpose: null,
+    selectedCategory: null,
+    selectedBudget: null,
+    productOffset: 0
   };
 
-  // Shopifyストアから全商品データを非同期で取得
   async function syncShopifyProducts() {
     if (!config.shopifyDomain) return;
     try {
@@ -328,7 +334,7 @@
         });
       }
     } catch (e) {
-      console.log("Shopify同期エラー（CORS制限等またはダミーURL）", e);
+      console.log("Shopify同期エラー", e);
     }
   }
 
@@ -346,9 +352,9 @@
                 <div class="card-body">
                   <p class="card-cat">${state.selectedCategory ? state.selectedCategory.label : ''}</p>
                   <h3>${p.name}</h3>
-                  <p class="price">${p.price.toLocaleString()}円 税込</p>
+                  <p class="price">${p.price > 0 ? p.price.toLocaleString() + '円 税込' : ''}</p>
                   <a class="product-link" href="${p.url}" target="_blank">
-                    商品を見る
+                    ${p.url.includes('/pages/') || p.url.includes('contact') ? 'ページを確認する' : '商品を見る'}
                     <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
                   </a>
                 </div>
@@ -360,7 +366,6 @@
     `).join('');
     thread.scrollTop = thread.scrollHeight;
 
-    // 選択肢の表示制御
     const opts = currentOptions();
     const choicesEl = document.getElementById("choices");
     if (opts.length > 0 && state.step !== "done") {
@@ -380,7 +385,6 @@
     }
   }
 
-  // 現在のステップに応じた選択肢を返す
   function currentOptions() {
     if (state.step === "purpose") {
       return config.purposes.map(p => ({ id: p.id, label: p.label, hint: p.hint }));
@@ -388,16 +392,85 @@
     if (state.step === "category" && state.selectedPurpose) {
       return state.selectedPurpose.categories.map(c => ({ id: c.id, label: c.label, hint: c.hint }));
     }
+    if (state.step === "budget") {
+      return BUDGET_OPTIONS;
+    }
     return [];
   }
 
-  // 選択時のイベントハンドラ
+  function getMatchedProducts(category, budget) {
+    let matched = [];
+
+    if (category.mode === "manual") {
+      const urls = category.manualUrls || [];
+      matched = urls.map(u => {
+        if (!u) return null;
+        const found = PRODUCTS.find(p => p.url === u || p.id === u.split('/').pop());
+        if (found) return found;
+        return { name: "おすすめピックアップ商品", price: 0, url: u, image: "" };
+      }).filter(Boolean);
+    } else {
+      const keywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+      const requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      
+      // ユーザーの選択予算を反映（なければCSVの基本設定）
+      const minPrice = budget ? budget.min : (category.minPrice ?? 0);
+      const maxPrice = budget ? budget.max : (category.maxPrice ?? 9999999);
+      const sortBy = category.sortBy || "price_desc";
+
+      let candidates = PRODUCTS.filter(p => {
+        if (p.price < minPrice || p.price > maxPrice) return false;
+        if (requiredTags.length > 0) {
+          const hasAllTags = requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)));
+          if (!hasAllTags) return false;
+        }
+        if (keywords.length > 0) {
+          const matchKeyword = keywords.some(k => p.titleLower.includes(k));
+          if (!matchKeyword) return false;
+        }
+        return true;
+      });
+
+      if (sortBy === "price_asc") {
+        candidates.sort((a, b) => a.price - b.price);
+      } else if (sortBy === "price_desc") {
+        candidates.sort((a, b) => b.price - a.price);
+      } else if (sortBy === "tag_match") {
+        candidates.sort((a, b) => b.tags.length - a.tags.length);
+      }
+
+      // 候補が足りない時の予算緩和フォールバック
+      if (candidates.length < 3 && budget && budget.id !== "all") {
+        const fallbackCandidates = PRODUCTS.filter(p => {
+          if (requiredTags.length > 0 && !requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)))) return false;
+          if (keywords.length > 0 && !keywords.some(k => p.titleLower.includes(k))) return false;
+          return true;
+        });
+        candidates = fallbackCandidates;
+      }
+
+      if (candidates.length > 0) {
+        state.productOffset = (state.productOffset + 3) % candidates.length;
+        matched = candidates.slice(state.productOffset, state.productOffset + 3);
+        if (matched.length < 3 && candidates.length >= 3) {
+          matched = matched.concat(candidates.slice(0, 3 - matched.length));
+        }
+      }
+
+      if (matched.length === 0) {
+        matched = candidates.slice(0, 3);
+      }
+    }
+    return matched;
+  }
+
   function handleSelect(id) {
     if (state.step === "purpose") {
       const purpose = config.purposes.find(p => p.id === id);
       if (!purpose) return;
       state.selectedPurpose = purpose;
       state.step = "category";
+      state.productOffset = 0;
 
       messages.push({ role: "user", text: purpose.label });
       messages.push({ role: "concierge", text: `${purpose.label}ですね。それでは、ご覧になりたいカテゴリーをお選びください。` });
@@ -406,93 +479,46 @@
       const category = state.selectedPurpose.categories.find(c => c.id === id);
       if (!category) return;
       state.selectedCategory = category;
-      state.step = "done";
 
       messages.push({ role: "user", text: category.label });
 
-      // レコメンド商品の選出処理
-      let matched = [];
-
-      if (category.mode === "manual") {
-        // 【モードA】固定URL指定（3枠）
-        const urls = category.manualUrls || [];
-        matched = urls.map(u => {
-          if (!u) return null;
-          // URLに一致する商品、またはハンドルが一致する商品をPRODUCTSから探す
-          const found = PRODUCTS.find(p => p.url === u || p.id === u.split('/').pop());
-          if (found) return found;
-          // 見つからない場合はプレースホルダーとして簡易生成
-          return {
-            name: "おすすめピックアップ商品",
-            price: 0,
-            url: u,
-            image: ""
-          };
-        }).filter(Boolean);
-
-      } else {
-        // 【モードB】Shopifyタグ・キーワード・価格帯による自動抽出・ソート
-        const keywords = (category.keywords || "").split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
-        const requiredTags = (category.tags || "").split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-        const minPrice = category.minPrice ?? 0;
-        const maxPrice = category.maxPrice ?? 200000;
-        const sortBy = category.sortBy || "price_desc";
-
-        // 1. フィルター適用
-        let candidates = PRODUCTS.filter(p => {
-          // 価格帯チェック
-          if (p.price < minPrice || p.price > maxPrice) return false;
-
-          // 必須タグチェック（指定がある場合）
-          if (requiredTags.length > 0) {
-            const hasAllTags = requiredTags.every(rt => p.tags.some(pt => pt.includes(rt)));
-            if (!hasAllTags) return false;
-          }
-
-          // キーワードチェック（指定がある場合）
-          if (keywords.length > 0) {
-            const matchKeyword = keywords.some(k => p.titleLower.includes(k));
-            if (!matchKeyword) return false;
-          }
-
-          return true;
+      // お問い合わせ・FAQなどの静的ページ指定の場合は予算を聞かずに即案内
+      if (category.mode === "manual" || state.selectedPurpose.id === "support") {
+        state.step = "done";
+        const matched = getMatchedProducts(category, null);
+        messages.push({
+          role: "concierge",
+          text: `ご案内いたします。以下のリンクより詳細をご確認ください。`,
+          products: matched
         });
-
-        // 2. ソート適用
-        if (sortBy === "price_asc") {
-          candidates.sort((a, b) => a.price - b.price);
-        } else if (sortBy === "price_desc") {
-          candidates.sort((a, b) => b.price - a.price);
-        } else if (sortBy === "tag_match") {
-          // タグの数が多い順など
-          candidates.sort((a, b) => b.tags.length - a.tags.length);
-        }
-
-        // 3. 上位3件を抽出
-        matched = candidates.slice(0, 3);
-
-        // フォールバック: 条件が厳しすぎて3件未満の場合、キーワードやタグ制限を緩めて補填
-        if (matched.length < 3) {
-          const fallbackCandidates = PRODUCTS.filter(p => !matched.some(m => m.id === p.id));
-          const needed = 3 - matched.length;
-          matched = matched.concat(fallbackCandidates.slice(0, needed));
-        }
+      } else {
+        // 商品検索の場合は予算ヒアリングへ進む
+        state.step = "budget";
+        messages.push({ role: "concierge", text: `${category.label}ですね。ご予算の目安をお選びください。` });
       }
 
+    } else if (state.step === "budget") {
+      const budget = BUDGET_OPTIONS.find(b => b.id === id);
+      if (!budget) return;
+      state.selectedBudget = budget;
+      state.step = "done";
+      state.productOffset = 0;
+
+      messages.push({ role: "user", text: budget.label });
+
+      const matched = getMatchedProducts(state.selectedCategory, budget);
       const count = matched.length;
       messages.push({
         role: "concierge",
         text: count > 0 
-          ? `ご条件に合うおすすめの逸品を ${count} 点厳選いたしました。`
-          : `申し訳ありません。該当する商品が見つかりませんでした。「最初から」やり直してお試しください。`,
+          ? `ご予算（${budget.label}）とご条件に合うおすすめの逸品を ${count} 点厳選いたしました。さらに別の提案をご希望の際は「他にも提案して」とお気軽にメッセージを入力してくださいね。`
+          : `申し訳ありません。ご予算にぴったり合う商品が見つかりませんでした。「最初から」やり直してお試しください。`,
         products: matched
       });
     }
-
     render();
   }
 
-  // 自由入力欄の処理
   document.getElementById("composer").addEventListener("submit", (e) => {
     e.preventDefault();
     const inputEl = document.getElementById("answer");
@@ -501,23 +527,42 @@
     inputEl.value = "";
 
     messages.push({ role: "user", text: val });
-    messages.push({ 
-      role: "concierge", 
-      text: "ご入力ありがとうございます。正確なご提案のため、上の選択肢からお選びいただくか、「最初から」ボタンよりやり直してください。" 
-    });
+
+    if (state.step === "done" && state.selectedCategory) {
+      const lowerVal = val.toLowerCase();
+      if (["他", "別", "違う", "もっと", "再", "もっかい", "もう一回", "次", "候補"].some(keyword => lowerVal.includes(keyword))) {
+        const matched = getMatchedProducts(state.selectedCategory, state.selectedBudget);
+        messages.push({
+          role: "concierge",
+          text: `かしこまりました！同じご条件の中から、別の逸品をあらためて選定いたしました。`,
+          products: matched
+        });
+      } else {
+        messages.push({
+          role: "concierge",
+          text: `メッセージありがとうございます！「${val}」についてのご相談ですね。さらに条件を変えて探す場合は、上の「最初から」ボタンをご利用いただくか、お問い合わせフォームよりお気軽にご連絡ください。`,
+        });
+      }
+    } else {
+      messages.push({ 
+        role: "concierge", 
+        text: "ご入力ありがとうございます。正確なご提案のため、上の選択肢からお選びいただくか、「最初から」ボタンよりやり直してください。" 
+      });
+    }
+
     render();
   });
 
-  // 最初からやり直すボタン
   document.getElementById("resetBtn").addEventListener("click", () => {
     state.step = "purpose";
     state.selectedPurpose = null;
     state.selectedCategory = null;
+    state.selectedBudget = null;
+    state.productOffset = 0;
     messages = [{ role: "concierge", text: config.greeting }];
     render();
   });
 
-  // 初期化実行
   async function init() {
     await syncShopifyProducts();
     render();
